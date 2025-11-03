@@ -13,11 +13,10 @@
     overflow: hidden;
     touch-action: none;
 
-    /* ✅ 가운데 정렬 추가 */
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: flex-start;
     height: 100vh;
   }
 
@@ -27,7 +26,7 @@
     border: 3px solid #3af;
     border-radius: 16px;
     box-shadow: 0 0 40px rgba(0, 180, 255, 0.4);
-    margin-top: 20px; /* ✅ 위 공간 확보 */
+    margin-top: 5vh;
   }
 
   #status {
@@ -149,7 +148,7 @@ window.addEventListener("resize", () => location.reload());
 // 게임 변수
 let state = { running: false, paused: false, score: 0, lives: 3 };
 const paddle = { width: 90, height: 15, x: 355, y: 560, speed: 9, movingLeft: false, movingRight: false };
-const ball = { x: 400, y: 540, dx: 5, dy: -5, radius: 8 };
+const ball = { x: 400, y: 540, dx: 3.5, dy: -3.5, radius: 12 }; // ✅ 속도↓, 크기↑
 let bricks = [];
 
 const quizList = [
@@ -180,7 +179,7 @@ function createLogoBricks(){
 createLogoBricks();
 
 function drawBall(){
-  const grad = ctx.createRadialGradient(ball.x, ball.y, 2, ball.x, ball.y, 10);
+  const grad = ctx.createRadialGradient(ball.x, ball.y, 2, ball.x, ball.y, 14);
   grad.addColorStop(0,"#fff");
   grad.addColorStop(1,"#3af");
   ctx.beginPath();
@@ -211,13 +210,14 @@ function collisionDetection(){
     }
   });
 }
-function resetBall(){ ball.x=400; ball.y=540; ball.dx=5; ball.dy=-5; }
+function resetBall(){ ball.x=400; ball.y=540; ball.dx=3.5; ball.dy=-3.5; }
 
-// 🎮 터치 조작 추가
-canvas.addEventListener("touchmove", e=>{
+// ✅ 터치 조작: 화면 어디서든 패들 이동 가능
+document.addEventListener("touchmove", e=>{
   const touch = e.touches[0];
   const rect = canvas.getBoundingClientRect();
-  paddle.x = (touch.clientX - rect.left)/ (rect.width / 800) - paddle.width/2;
+  const relativeX = (touch.clientX - rect.left) / (rect.width / 800);
+  paddle.x = relativeX - paddle.width/2;
 });
 
 document.addEventListener("keydown", e=>{
@@ -257,7 +257,9 @@ function handleAnswer(ans,timeout=false){
     state.score += 200;
   } else {
     alert(timeout ? "시간 초과 😅 -1라이프, -100점" : "틀렸어요 😅 -1라이프, -100점");
-    state.score -= 100; state.lives--; ball.dx *= 1.2; ball.dy *= 1.2;
+    state.score -= 100; state.lives--;
+    ball.dx *= 1.1; // ✅ 속도 증가 완화
+    ball.dy *= 1.1;
   }
   document.getElementById("nextQuizBtn").style.display="inline-block";
   updateStatus();
@@ -283,7 +285,8 @@ function draw(){
     if(ball.y-ball.radius<0) ball.dy=-ball.dy;
     if(ball.y+ball.radius>paddle.y && ball.x>paddle.x && ball.x<paddle.x+paddle.width){
       let hitPos=(ball.x-(paddle.x+paddle.width/2))/(paddle.width/2);
-      ball.dx=hitPos*6; ball.dy=-Math.abs(ball.dy);
+      ball.dx=hitPos*4.5; // ✅ 반사 시 속도 조정
+      ball.dy=-Math.abs(ball.dy);
     }
     if(ball.y>600){ state.lives--; updateStatus();
       if(state.lives<=0){ status.innerHTML="게임 오버 😢 <button onclick='location.reload()'>재도전</button>"; state.running=false; }
