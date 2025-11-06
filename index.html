@@ -60,7 +60,6 @@
     padding: 12px 24px;
     font-size: 1.1rem;
     cursor: pointer;
-    display: block; /* ✅ 즉시 표시 */
   }
   #quiz {
     position: absolute;
@@ -128,7 +127,6 @@
     font-size: 1.5rem;
     z-index: 7;
     text-align: center;
-    line-height: 2.4rem;
   }
   #retryBtn {
     margin-top: 20px;
@@ -148,7 +146,7 @@
       <div>모빌라이즈파이낸셜서비스</div>
       <div>제공</div>
       <div>"아이스 브레이커"</div>
-      <button id="startBtn" onclick="startGame()">게임 시작하기</button>
+      <button id="startBtn" style="display:none;" onclick="startGame()">게임 시작하기</button>
     </div>
 
     <div id="quiz">
@@ -186,7 +184,7 @@ window.addEventListener("resize", () => {
   canvas.height = height;
 });
 
-let ball = { x: width / 2, y: height - 30, dx: 2.5, dy: -2.5, r: 8 }; // ✅ 속도 느리게
+let ball = { x: width / 2, y: height - 30, dx: 2.5, dy: -2.5, r: 8 }; // 느리게 수정
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
 let score = 0, lives = 3;
@@ -242,10 +240,7 @@ function drawBricks() {
     if (!b.visible) return;
     ctx.fillStyle = b.color;
     ctx.fillRect(b.x, b.y, b.w, b.h);
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = b.color;
   });
-  ctx.shadowBlur = 0;
 }
 
 function drawBall() {
@@ -313,17 +308,116 @@ function updateScore() {
   document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
 }
 
+function startQuiz() {
+  if (!gameRunning) return;
+  quizActive = true;
+  gameRunning = false;
+  const q = quizList[Math.floor(Math.random() * quizList.length)];
+  questionText.textContent = q.q;
+  quizBox.style.display = "flex";
+  timeLeft = 10;
+  timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+  quizTimer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(quizTimer);
+      checkAnswer(false, q.a);
+    }
+  }, 1000);
+  quizBox.dataset.answer = q.a;
+}
+
+function stopQuizTimer() {
+  if (quizTimer) clearInterval(quizTimer);
+}
+
+function answerQuiz(ans) {
+  stopQuizTimer();
+  const correct = quizBox.dataset.answer === "true";
+  checkAnswer(ans, correct);
+}
+
+function showResultMessage(text, color) {
+  resultMsg.textContent = text;
+  resultMsg.style.color = color;
+  resultMsg.style.display = "block";
+  pausedForResult = true;
+  setTimeout(() => {
+    resultMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
+  }, 1500);
+}
+
+function showLifeMessage(text) {
+  pausedForResult = true;
+  lifeMsg.textContent = text;
+  lifeMsg.style.display = "block";
+  setTimeout(() => {
+    lifeMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
+  }, 1500);
+}
+
+function checkAnswer(selected, correct) {
+  quizBox.style.display = "none";
+  quizActive = false;
+  if (selected === correct) {
+    score += 200;
+    showResultMessage("정답입니다!\n+200점", "#00ff88");
+  } else {
+    score -= 100;
+    lives--;
+    showResultMessage("오답입니다!\n-100점", "#ff5555");
+  }
+  updateScore();
+  if (lives <= 0) endGame();
+}
+
+function startQuizCycle() {
+  quizInterval = setInterval(() => {
+    if (gameRunning && !quizActive && !pausedForResult) startQuiz();
+  }, 10000);
+}
+
+function stopQuizCycle() {
+  if (quizInterval) clearInterval(quizInterval);
+}
+
+function resetGame() {
+  score = 0;
+  lives = 3;
+  createLogoBricks();
+  updateScore();
+  ball = { x: width / 2, y: height - 40, dx: 2.5, dy: -2.5, r: 8 }; // 속도 느리게
+}
+
 function endGame() {
   stopQuizTimer();
   stopQuizCycle();
   gameRunning = false;
   quizActive = false;
   pausedForResult = false;
-  // 줄바꿈을 <br>로 추가하여 가독성 개선
   document.getElementById("finalText").innerHTML =
-    `게임 종료!<br><br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
+    `게임 종료!<br><br>최종 점수: ${score}<br>남은 라이프: ${lives}`; // 줄바꿈 개선
   document.getElementById("finalResult").style.display = "flex";
 }
+
+function returnToIntro() {
+  document.getElementById("finalResult").style.display = "none";
+  resetGame();
+  document.getElementById("intro").style.display = "flex";
+  document.getElementById("startBtn").style.display = "block";
+}
+
+createLogoBricks();
+setTimeout(() => {
+  document.getElementById("startBtn").style.display = "block";
+}, 3000);
 
 function startGame() {
   document.getElementById("intro").style.display = "none";
@@ -333,18 +427,6 @@ function startGame() {
   startQuizCycle();
   update();
 }
-
-function resetGame() {
-  score = 0;
-  lives = 3;
-  createLogoBricks();
-  updateScore();
-  // 공 속도 느리게 조정 (기존 4 → 2.5)
-  ball = { x: width / 2, y: height - 40, dx: 2.5, dy: -2.5, r: 8 };
-}
-
-createLogoBricks();
 </script>
 </body>
 </html>
-
