@@ -184,7 +184,11 @@ window.addEventListener("resize", () => {
   canvas.height = height;
 });
 
-// 공의 속도는 1로 유지합니다.
+// 공의 속도 관련 변수와 제한 설정
+const SPEED_CHANGE = 0.1;
+const MAX_SPEED = 3.0;
+const MIN_SPEED = 1.0; 
+
 let ball = { x: width / 2, y: height - 30, dx: 1, dy: -1, r: 8 };
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
@@ -201,21 +205,41 @@ const timerDisplay = document.getElementById("timer");
 const resultMsg = document.getElementById("resultMsg");
 const lifeMsg = document.getElementById("lifeMsg");
 
-// 퀴즈 5개가 추가되어 총 8개의 퀴즈가 되었습니다.
-const quizList = [
+// 총 20개의 퀴즈 목록
+const allQuizzes = [
   { q: "그랑콜레오스 26년 생산기준\n3.3% 금리 할부원금제한은\n2500만원 있다?", a: true },
   { q: "모빌라이즈파이낸셜서비스는\n프랑스 회사다?", a: true },
   { q: "잔가보장상품은\n모빌라이즈파이낸셜서비스에만 있는\n할부상품이다?", a: false },
   { q: "모빌라이즈파이낸셜서비스의 공식 금융 파트너는\n르노그룹이다?", a: true },
   { q: "모빌라이즈파이낸셜서비스 코리아의\n대표 고객센터 번호는 1588-2114이다?", a: false },
-  // ▼▼▼ 5개 퀴즈 추가 시작 ▼▼▼
   { q: "모빌라이즈파이낸셜서비스 코리아는\n할부, 리스, 중고차 사업 분야에 걸친\n종합 금융 서비스를 제공한다?", a: true },
   { q: "모빌라이즈파이낸셜서비스 코리아는\n르노코리아자동차의 금융 파트너로,\n2023년 한국 진출 20주년을 맞이했다?", a: true },
-  { q: "모빌라이즈파이낸셜서비스의 이전 사명은\n'르노파이낸셜코리아'였다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스의 이전 사명은\n'르노파이낸셜서비스코리아'였다?", a: true },
   { q: "모빌라이즈파이낸셜서비스 코리아의\n본사 주소는 서울시 중구 한강대로 416\n서울스퀘어에 있다?", a: true },
-  { q: "모빌라이즈파이낸셜서비스의 금융상품 중\n신차할부는 없다?", a: false }
-  // ▲▲▲ 5개 퀴즈 추가 끝 ▲▲▲
+  { q: "모빌라이즈파이낸셜서비스의 금융상품 중\n신차할부는 없다?", a: false },
+  { q: "모빌라이즈파이낸셜서비스 본사인\n프랑스 RCI뱅크앤서비스는\n2022년 5월에 사명을 변경했다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스는 전 세계적으로\n르노·닛산·미쓰비시 고객에게\n금융 서비스를 제공한다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스의 상품 중\n운용리스(Lease)를 이용하면\n장기렌트와 같이 '하', '허', '호' 번호판을 사용하게 된다?", a: false },
+  { q: "운용리스의 계약 만기 시 차량 반납, 이용 기간 연장,\n차량 구매 중 하나를 선택할 수 있다?", a: true },
+  { q: "중고차 오토론의 대출 최고 금리는\n연 18%이다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스는 고객에게\n차량유지 및 관리에 도움이 되는\n제휴 보험 서비스 상품도 제공한다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스의 모바일 앱은\n할부금융이 필요한 고객에게\n디지털 할부 금융 서비스를 제공한다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스 코리아의\n사업자등록번호는 104-81-79808이다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스 코리아는\n2003년에 국내 법인이 설립되었다?", a: true },
+  { q: "리스 상품 중 금융리스는 운용리스와 달리\n계약 만기 시 차량 반납이 불가능하다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스 코리아의 대표는\nAlex ZHURKIN (알렉스 쥬르킨)이다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스의 본사 위치는\n프랑스 파리이다?", a: true }
 ];
+
+let availableQuizIndices = []; // 남아있는 퀴즈 인덱스
+
+function resetQuizAvailability() {
+    availableQuizIndices = [...Array(allQuizzes.length).keys()];
+    for (let i = availableQuizIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availableQuizIndices[i], availableQuizIndices[j]] = [availableQuizIndices[j], availableQuizIndices[i]];
+    }
+}
 
 canvas.addEventListener("touchmove", e => {
   const touch = e.touches[0];
@@ -311,7 +335,7 @@ function update() {
       return;
     } else {
       showLifeMessage(`라이프가 1 감소했습니다.\n\n남은 라이프: ${lives}`);
-      ball = { x: width / 2, y: height - 40, dx: 1, dy: -1, r: 8 };
+      ball = { x: width / 2, y: height - 40, dx: Math.abs(ball.dx), dy: -Math.abs(ball.dy), r: 8 };
     }
   }
   draw();
@@ -326,7 +350,14 @@ function startQuiz() {
   if (!gameRunning) return;
   quizActive = true;
   gameRunning = false;
-  const q = quizList[Math.floor(Math.random() * quizList.length)];
+  
+  if (availableQuizIndices.length === 0) {
+      resetQuizAvailability(); 
+  }
+  const randomIndexInAvailable = Math.floor(Math.random() * availableQuizIndices.length);
+  const quizIndex = availableQuizIndices.splice(randomIndexInAvailable, 1)[0];
+  const q = allQuizzes[quizIndex];
+  
   questionText.textContent = q.q;
   quizBox.style.display = "flex";
   timeLeft = 10;
@@ -344,6 +375,21 @@ function startQuiz() {
 
 function stopQuizTimer() {
   if (quizTimer) clearInterval(quizTimer);
+}
+
+// 🎯 공 속도 조절 로직 함수
+function adjustBallSpeed(isCorrect) {
+    let speed = Math.abs(ball.dx);
+    
+    if (isCorrect) {
+        speed = Math.max(MIN_SPEED, speed - SPEED_CHANGE); // 정답: 속도 감소 (최소 속도 1.0)
+    } else {
+        speed = Math.min(MAX_SPEED, speed + SPEED_CHANGE); // 오답: 속도 증가 (최대 속도 3.0)
+    }
+    
+    // dx, dy 방향은 유지하고 크기(speed)만 변경
+    ball.dx = ball.dx > 0 ? speed : -speed;
+    ball.dy = ball.dy > 0 ? speed : -speed;
 }
 
 function answerQuiz(ans) {
@@ -380,6 +426,10 @@ function showLifeMessage(text) {
 function checkAnswer(selected, correct) {
   quizBox.style.display = "none";
   quizActive = false;
+  
+  // 🎯 퀴즈 결과에 따른 공 속도 조절
+  adjustBallSpeed(selected === correct);
+
   if (selected === correct) {
     score += 200;
     showResultMessage("정답입니다!\n\n+200점", "#00ff88");
@@ -407,7 +457,9 @@ function resetGame() {
   lives = 3;
   createLogoBricks();
   updateScore();
-  ball = { x: width / 2, y: height - 40, dx: 1, dy: -1, r: 8 };
+  // 리셋 시 공 속도는 1.0으로 초기화
+  ball = { x: width / 2, y: height - 40, dx: 1.0, dy: -1.0, r: 8 }; 
+  resetQuizAvailability(); 
 }
 
 function endGame() {
@@ -430,6 +482,7 @@ function returnToIntro() {
 }
 
 createLogoBricks();
+resetQuizAvailability();
 setTimeout(() => {
   document.getElementById("startBtn").style.display = "block";
 }, 3000);
