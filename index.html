@@ -184,7 +184,7 @@ window.addEventListener("resize", () => {
   canvas.height = height;
 });
 
-// 공의 속도를 1로 더 느리게 조정했습니다.
+// 공의 속도는 1로 유지합니다.
 let ball = { x: width / 2, y: height - 30, dx: 1, dy: -1, r: 8 };
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
@@ -201,10 +201,20 @@ const timerDisplay = document.getElementById("timer");
 const resultMsg = document.getElementById("resultMsg");
 const lifeMsg = document.getElementById("lifeMsg");
 
+// 퀴즈 5개가 추가되어 총 8개의 퀴즈가 되었습니다.
 const quizList = [
   { q: "그랑콜레오스 26년 생산기준\n3.3% 금리 할부원금제한은\n2500만원 있다?", a: true },
   { q: "모빌라이즈파이낸셜서비스는\n프랑스 회사다?", a: true },
-  { q: "잔가보장상품은\n모빌라이즈파이낸셜서비스에만 있는\n할부상품이다?", a: false }
+  { q: "잔가보장상품은\n모빌라이즈파이낸셜서비스에만 있는\n할부상품이다?", a: false },
+  { q: "모빌라이즈파이낸셜서비스의 공식 금융 파트너는\n르노그룹이다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스 코리아의\n대표 고객센터 번호는 1588-2114이다?", a: false },
+  // ▼▼▼ 5개 퀴즈 추가 시작 ▼▼▼
+  { q: "모빌라이즈파이낸셜서비스 코리아는\n할부, 리스, 중고차 사업 분야에 걸친\n종합 금융 서비스를 제공한다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스 코리아는\n르노코리아자동차의 금융 파트너로,\n2023년 한국 진출 20주년을 맞이했다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스의 이전 사명은\n'르노파이낸셜코리아'였다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스 코리아의\n본사 주소는 서울시 중구 한강대로 416\n서울스퀘어에 있다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스의 금융상품 중\n신차할부는 없다?", a: false }
+  // ▲▲▲ 5개 퀴즈 추가 끝 ▲▲▲
 ];
 
 canvas.addEventListener("touchmove", e => {
@@ -301,7 +311,6 @@ function update() {
       return;
     } else {
       showLifeMessage(`라이프가 1 감소했습니다.\n\n남은 라이프: ${lives}`);
-      // 공의 속도를 1로 더 느리게 조정했습니다.
       ball = { x: width / 2, y: height - 40, dx: 1, dy: -1, r: 8 };
     }
   }
@@ -398,7 +407,6 @@ function resetGame() {
   lives = 3;
   createLogoBricks();
   updateScore();
-  // 공의 속도를 1로 더 느리게 조정했습니다.
   ball = { x: width / 2, y: height - 40, dx: 1, dy: -1, r: 8 };
 }
 
@@ -409,7 +417,6 @@ function endGame() {
   quizActive = false;
   pausedForResult = false;
   
-  // 요청하신 대로 최종 결과 문구를 <br><br>을 사용하여 줄 간격을 반영했습니다.
   document.getElementById("finalText").innerHTML = `게임 종료! <br><br> 최종 점수: ${score} <br><br> 남은 라이프: ${lives}`;
   
   document.getElementById("finalResult").style.display = "flex";
