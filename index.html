@@ -2,91 +2,102 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>모빌라이즈파이낸셜서비스 벽돌깨기 퀴즈 🎮</title>
 <style>
-  body {
+  html, body {
     margin: 0;
+    padding: 0;
     background: radial-gradient(circle at 30% 30%, #021020, #000);
     overflow: hidden;
     font-family: "Pretendard", sans-serif;
     color: white;
-    text-align: center;
+    height: 100%;
   }
   canvas {
     display: block;
     margin: 0 auto;
-    background: transparent;
+    background: #000;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    touch-action: none;
+  }
+  #intro, #quizBox, #gameOver {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
   #intro {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: white;
     opacity: 1;
     transition: opacity 1s;
+    text-align: center;
   }
   #quizBox {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.85);
     border: 2px solid #fff;
-    padding: 20px;
     border-radius: 12px;
-    display: none;
+    padding: 20px;
     width: 80%;
-    max-width: 400px;
+    max-width: 350px;
+    display: none;
+    text-align: center;
   }
-  #quizBox h2 { font-size: 1.2rem; }
-  #quizTimer { margin-top: 10px; font-size: 1rem; color: #f6c400; }
+  #quizBox h2 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  #quizTimer {
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #ffcc00;
+  }
   #quizBox button {
     margin: 10px;
     padding: 10px 20px;
-    font-size: 1rem;
     border: none;
     border-radius: 8px;
-    cursor: pointer;
+    font-size: 1rem;
+    background: #333;
+    color: white;
   }
-  #quizBox button:hover { background: #444; color: white; }
+  #quizBox button:hover {
+    background: #555;
+  }
   #gameOver {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.85);
-    padding: 30px;
-    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.85);
     border: 2px solid #fff;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
     display: none;
   }
-  #gameOver h1 { margin-bottom: 20px; }
   #restartBtn {
-    padding: 10px 20px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
     background: #ff3c00;
-    color: #fff;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    border-radius: 8px;
+    padding: 10px 20px;
     cursor: pointer;
   }
   #instruction {
-    position: absolute;
-    bottom: 10px;
+    position: fixed;
+    bottom: 8px;
     width: 100%;
     text-align: center;
+    color: #bbb;
     font-size: 0.9rem;
-    color: #ccc;
   }
 </style>
 </head>
 <body>
 
 <div id="intro">모빌라이즈파이낸셜서비스 제공</div>
-<canvas id="gameCanvas" width="800" height="600"></canvas>
+<canvas id="gameCanvas"></canvas>
+
 <div id="quizBox">
   <h2 id="quizQuestion"></h2>
   <div>
@@ -95,24 +106,43 @@
   </div>
   <div id="quizTimer">⏱ 10초</div>
 </div>
+
 <div id="gameOver">
   <h1>게임 오버 💀</h1>
   <p>재도전 하시겠습니까?</p>
   <button id="restartBtn">재도전</button>
 </div>
-<div id="instruction">💡 키보드 ← → 또는 화면 터치로 패들을 움직이세요!</div>
+
+<div id="instruction">💡 패들을 터치 또는 드래그로 움직이세요!</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-let paddleX = canvas.width / 2 - 40, paddleW = 80, paddleH = 12;
-let ballX = canvas.width / 2, ballY = canvas.height - 60, ballDX = 4, ballDY = -4, ballR = 8;
-let bricks = [], score = 0, lives = 3, gameRunning = false;
+
+// ✅ 반응형 캔버스 사이즈
+function resizeCanvas() {
+  canvas.width = Math.min(window.innerWidth * 0.95, 800);
+  canvas.height = Math.min(window.innerHeight * 0.75, 600);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+let paddleW = canvas.width * 0.2;
+let paddleH = 10;
+let paddleX = canvas.width / 2 - paddleW / 2;
+let ballX = canvas.width / 2;
+let ballY = canvas.height - 50;
+let ballDX = 3;
+let ballDY = -3;
+let ballR = 8;
+let score = 0, lives = 3, gameRunning = false;
+let bricks = [];
 let quizTimer, quizTimeLeft;
+
+const intro = document.getElementById("intro");
 const quizBox = document.getElementById("quizBox");
 const quizQuestion = document.getElementById("quizQuestion");
 const quizTimerDisplay = document.getElementById("quizTimer");
-const intro = document.getElementById("intro");
 const gameOverBox = document.getElementById("gameOver");
 
 const quizData = [
@@ -137,19 +167,19 @@ function startGame() {
   setInterval(showQuiz, 5000);
 }
 
-// 🧱 로고형 벽돌 배치
+// 🧱 로고형 벽돌 배치 (오렌지 대각선 ↙)
 function createLogoBricks() {
   const brickW = 45, brickH = 18;
   const cx = canvas.width / 2, cy = 200;
   const outer = 200, inner = 120;
 
   for (let y = 60; y < 360; y += brickH + 4) {
-    for (let x = 60; x < 740; x += brickW + 4) {
+    for (let x = 60; x < canvas.width - 60; x += brickW + 4) {
       const dx = x - cx, dy = y - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const angle = Math.atan2(dy, dx);
       const circlePart = dist < outer && dist > inner && (angle < -0.5 || angle > 0.5);
-      const slash = Math.abs(dy + dx * 0.5) < 20; // ↙ 방향
+      const slash = Math.abs(dy + dx * 0.5) < 20;
       if (circlePart || slash) {
         bricks.push({x, y, w: brickW, h: brickH, color: slash ? "#ff3c00" : "#fff", visible: true});
       }
@@ -161,6 +191,11 @@ function createLogoBricks() {
 function draw() {
   if (!gameRunning) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 테두리
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
   // 공
   ctx.beginPath();
@@ -181,10 +216,10 @@ function draw() {
     }
   });
 
-  // 점수/라이프 표시
+  // 점수 / 라이프
   ctx.font = "16px Pretendard";
   ctx.fillStyle = "#fff";
-  ctx.fillText(`점수: ${score}`, 20, 20);
+  ctx.fillText(`점수: ${score}`, 10, 20);
   ctx.fillText(`라이프: ${lives}`, canvas.width - 100, 20);
 
   // 공 이동
@@ -195,19 +230,16 @@ function draw() {
   if (ballY < ballR) ballDY = -ballDY;
 
   // 패들 충돌
-  if (ballY > canvas.height - 42 && ballX > paddleX && ballX < paddleX + paddleW) {
+  if (ballY > canvas.height - 40 && ballX > paddleX && ballX < paddleX + paddleW) {
     const hitPos = (ballX - (paddleX + paddleW / 2)) / (paddleW / 2);
     ballDY = -Math.abs(ballDY);
     ballDX = hitPos * 5;
   }
 
-  // 바닥
+  // 바닥 충돌
   if (ballY > canvas.height - ballR) {
     lives--;
-    if (lives <= 0) {
-      gameOver();
-      return;
-    }
+    if (lives <= 0) return gameOver();
     resetBall();
   }
 
@@ -223,19 +255,14 @@ function draw() {
   requestAnimationFrame(draw);
 }
 
-// 🔁 공 리셋
 function resetBall() {
   ballX = canvas.width / 2;
-  ballY = canvas.height - 60;
-  ballDX = 4 * (Math.random() > 0.5 ? 1 : -1);
-  ballDY = -4;
+  ballY = canvas.height - 50;
+  ballDX = 3 * (Math.random() > 0.5 ? 1 : -1);
+  ballDY = -3;
 }
 
-// 📱 마우스 및 터치 이동
-document.addEventListener("mousemove", e => {
-  const rect = canvas.getBoundingClientRect();
-  paddleX = e.clientX - rect.left - paddleW / 2;
-});
+// 📱 모바일 터치 이동
 canvas.addEventListener("touchmove", e => {
   e.preventDefault();
   const rect = canvas.getBoundingClientRect();
@@ -243,7 +270,13 @@ canvas.addEventListener("touchmove", e => {
   paddleX = touch.clientX - rect.left - paddleW / 2;
 });
 
-// 🧠 퀴즈 기능
+// 💻 마우스 이동
+document.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  paddleX = e.clientX - rect.left - paddleW / 2;
+});
+
+// 🧠 퀴즈
 function showQuiz() {
   if (!gameRunning) return;
   const quiz = quizData[Math.floor(Math.random() * quizData.length)];
@@ -261,8 +294,9 @@ function showQuiz() {
       quizBox.style.display = "none";
       score -= 100;
       lives--;
-      if (lives <= 0) gameOver();
-      else gameRunning = true, requestAnimationFrame(draw);
+      if (lives <= 0) return gameOver();
+      gameRunning = true;
+      requestAnimationFrame(draw);
     }
   }, 1000);
 
