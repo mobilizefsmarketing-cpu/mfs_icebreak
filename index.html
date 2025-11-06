@@ -319,8 +319,9 @@ function endGame() {
   gameRunning = false;
   quizActive = false;
   pausedForResult = false;
-  document.getElementById("finalText").innerHTML = 
-    `게임 종료<br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
+  // 줄바꿈을 <br>로 추가하여 가독성 개선
+  document.getElementById("finalText").innerHTML =
+    `게임 종료!<br><br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
   document.getElementById("finalResult").style.display = "flex";
 }
 
@@ -338,16 +339,12 @@ function resetGame() {
   lives = 3;
   createLogoBricks();
   updateScore();
+  // 공 속도 느리게 조정 (기존 4 → 2.5)
   ball = { x: width / 2, y: height - 40, dx: 2.5, dy: -2.5, r: 8 };
-}
-
-function returnToIntro() {
-  document.getElementById("finalResult").style.display = "none";
-  resetGame();
-  document.getElementById("intro").style.display = "flex";
 }
 
 createLogoBricks();
 </script>
 </body>
 </html>
+
