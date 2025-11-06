@@ -11,197 +11,428 @@
     background: radial-gradient(circle at center, #041630, #000);
     color: white;
     font-family: "Pretendard", sans-serif;
-    text-align: center;
+    touch-action: none;
+  }
+  #gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   canvas {
-    display: block;
-    margin: 0 auto;
-    background: rgba(0,0,0,0.15);
+    border: 3px solid #39aaff;
+    border-radius: 15px;
+    background: radial-gradient(circle at 30% 30%, #062047, #000);
+    box-shadow: 0 0 20px #009dff;
+    touch-action: none;
   }
-
-  #startButton {
+  #scoreBoard {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 12px;
+    border-radius: 10px;
+  }
+  #intro {
+    position: absolute;
+    inset: 0;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #39aaff;
+    font-size: 1.6rem;
+    line-height: 2.5rem;
+    font-weight: bold;
+    z-index: 5;
+  }
+  #startBtn {
+    margin-top: 30px;
+    background: #00bfff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  #quiz {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 6;
+    padding: 0 20px;
+  }
+  #quiz h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+    line-height: 1.6rem;
+    word-break: keep-all;
+    white-space: pre-line;
+  }
+  .quiz-btn-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+  }
+  .quiz-btn {
+    background: #00bfff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  #timer {
+    font-size: 1rem;
+    margin-top: 10px;
+    color: #ff6666;
+  }
+  #resultMsg, #lifeMsg {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 22px;
-    padding: 14px 28px;
-    background: linear-gradient(135deg, #1e90ff, #00bfff);
-    color: white;
-    border: none;
+    font-size: 1.8rem;
+    font-weight: bold;
+    background: rgba(0,0,0,0.7);
+    padding: 20px 30px;
     border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    z-index: 10;
-  }
-  #startButton:hover {
-    transform: translate(-50%, -50%) scale(1.05);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.4);
-  }
-
-  #finalResult {
     display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.85);
-    color: white;
-    font-size: 24px;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+    z-index: 8;
+    text-align: center;
+    white-space: pre-line;
   }
-  #finalResult button {
+  #finalResult {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    color: #39aaff;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    z-index: 7;
+    text-align: center;
+  }
+  #retryBtn {
     margin-top: 20px;
-    padding: 10px 24px;
-    font-size: 18px;
-    background: #1e90ff;
+    background: #00bfff;
+    color: white;
     border: none;
     border-radius: 10px;
-    color: white;
+    padding: 12px 24px;
+    font-size: 1.1rem;
     cursor: pointer;
   }
 </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="480" height="640"></canvas>
-  <button id="startButton">게임 시작하기</button>
+  <div id="gameContainer">
+    <div id="intro">
+      <div>모빌라이즈파이낸셜서비스</div>
+      <div>제공</div>
+      <div>"아이스 브레이커"</div>
+      <button id="startBtn" style="display:none;" onclick="startGame()">게임 시작하기</button>
+    </div>
 
-  <div id="finalResult">
-    <div id="finalText"></div>
-    <button onclick="location.reload()">다시하기</button>
+    <div id="quiz">
+      <h2 id="questionText"></h2>
+      <div class="quiz-btn-container">
+        <button class="quiz-btn" onclick="answerQuiz(true)">O</button>
+        <button class="quiz-btn" onclick="answerQuiz(false)">X</button>
+      </div>
+      <div id="timer"></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="scoreBoard">점수: 0 | 라이프: 3</div>
+    <div id="resultMsg"></div>
+    <div id="lifeMsg"></div>
+
+    <div id="finalResult">
+      <div id="finalText"></div>
+      <button id="retryBtn" onclick="returnToIntro()">다시 도전하기</button>
+    </div>
   </div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-let width = canvas.width;
-let height = canvas.height;
+let width = window.innerWidth * 0.9;
+let height = window.innerHeight * 0.6;
+canvas.width = width;
+canvas.height = height;
 
-let paddle = { x: width / 2 - 40, y: height - 30, w: 80, h: 10, speed: 7 };
-let ball = { x: width / 2, y: height - 40, dx: 2.5, dy: -2.5, r: 8 };
+window.addEventListener("resize", () => {
+  width = window.innerWidth * 0.9;
+  height = window.innerHeight * 0.6;
+  canvas.width = width;
+  canvas.height = height;
+});
+
+// 1. 공의 스피드를 늦췄습니다. (dx: 4 -> 3, dy: -4 -> -3)
+let ball = { x: width / 2, y: height - 30, dx: 3, dy: -3, r: 8 };
+let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
-let rows = 4, cols = 5;
 let score = 0, lives = 3;
 let gameRunning = false;
+let quizActive = false;
+let quizTimer, timeLeft = 10;
+let quizInterval;
+let pausedForResult = false;
+
+const quizBox = document.getElementById("quiz");
+const questionText = document.getElementById("questionText");
+const timerDisplay = document.getElementById("timer");
+const resultMsg = document.getElementById("resultMsg");
+const lifeMsg = document.getElementById("lifeMsg");
+
+const quizList = [
+  { q: "그랑콜레오스 26년 생산기준\n3.3% 금리 할부원금제한은\n2500만원 있다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스는\n프랑스 회사다?", a: true },
+  { q: "잔가보장상품은\n모빌라이즈파이낸셜서비스에만 있는\n할부상품이다?", a: false }
+];
+
+canvas.addEventListener("touchmove", e => {
+  const touch = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  paddle.x = touch.clientX - rect.left - paddle.w / 2;
+});
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  paddle.x = e.clientX - rect.left - paddle.w / 2;
+});
 
 function createLogoBricks() {
+  const brickW = 40, brickH = 16;
+  const cx = width / 2, cy = height / 3;
+  const outer = 160, inner = 90;
   bricks = [];
-  let bw = 80, bh = 25, padding = 10, offsetX = (width - (bw + padding) * cols) / 2;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      bricks.push({ x: offsetX + c * (bw + padding), y: 60 + r * (bh + padding), w: bw, h: bh, visible: true });
+  for (let y = 40; y < height / 1.5; y += brickH + 4) {
+    for (let x = 40; x < width - 40; x += brickW + 4) {
+      const dx = x - cx, dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+      const circlePart = dist < outer && dist > inner && (angle < -0.5 || angle > 0.5);
+      const slash = Math.abs(dy + dx * 0.5) < 20;
+      if (circlePart || slash) {
+        bricks.push({x, y, w: brickW, h: brickH, color: slash ? "#ff3c00" : "#39aaff", visible: true});
+      }
     }
   }
 }
-createLogoBricks();
 
-function drawPaddle() {
-  ctx.fillStyle = "#00bfff";
-  ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+function drawBricks() {
+  bricks.forEach(b => {
+    if (!b.visible) return;
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = b.color;
+  });
+  ctx.shadowBlur = 0;
 }
+
 function drawBall() {
   ctx.beginPath();
   ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
   ctx.fillStyle = "#fff";
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = "#00ffff";
   ctx.fill();
   ctx.closePath();
-}
-function drawBricks() {
-  bricks.forEach(b => {
-    if (b.visible) {
-      ctx.fillStyle = "#1e90ff";
-      ctx.fillRect(b.x, b.y, b.w, b.h);
-    }
-  });
-}
-function drawScore() {
-  ctx.font = "16px Pretendard";
-  ctx.fillText(`점수: ${score}`, 10, 20);
-  ctx.fillText(`라이프: ${lives}`, width - 100, 20);
+  ctx.shadowBlur = 0;
 }
 
-function movePaddle(e) {
-  let rect = canvas.getBoundingClientRect();
-  let mouseX = e.clientX - rect.left;
-  paddle.x = Math.max(0, Math.min(mouseX - paddle.w / 2, width - paddle.w));
+function drawPaddle() {
+  ctx.fillStyle = "#00ccff";
+  ctx.fillRect(paddle.x, height - 30, paddle.w, paddle.h);
 }
-canvas.addEventListener("mousemove", movePaddle);
+
+function draw() {
+  ctx.clearRect(0, 0, width, height);
+  drawBricks();
+  drawBall();
+  drawPaddle();
+}
 
 function update() {
-  if (!gameRunning) return;
+  if (!gameRunning || quizActive || pausedForResult) return;
   ball.x += ball.dx;
   ball.y += ball.dy;
 
   if (ball.x + ball.r > width || ball.x - ball.r < 0) ball.dx *= -1;
   if (ball.y - ball.r < 0) ball.dy *= -1;
 
-  if (
-    ball.y + ball.r > paddle.y &&
-    ball.x > paddle.x &&
-    ball.x < paddle.x + paddle.w
-  ) {
-    ball.dy *= -1;
+  if (ball.y + ball.r > height - 30 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
+    ball.dy = -Math.abs(ball.dy);
   }
 
   bricks.forEach(b => {
-    if (b.visible) {
-      if (
-        ball.x > b.x &&
-        ball.x < b.x + b.w &&
-        ball.y - ball.r < b.y + b.h &&
-        ball.y + ball.r > b.y
-      ) {
-        ball.dy *= -1;
-        b.visible = false;
-        score += 10;
-      }
+    if (b.visible &&
+        ball.x > b.x && ball.x < b.x + b.w &&
+        ball.y > b.y && ball.y < b.y + b.h) {
+      b.visible = false;
+      ball.dy *= -1;
+      score += 10;
+      updateScore();
     }
   });
 
-  if (ball.y + ball.r > height) {
+  if (ball.y > height) {
     lives--;
-    if (lives > 0) {
-      ball.x = width / 2;
-      ball.y = height - 40;
-      ball.dy = -2.5;
-    } else {
+    updateScore();
+    if (lives <= 0) {
       endGame();
+      return;
+    } else {
+      showLifeMessage(`라이프가 1 감소했습니다.\n남은 라이프: ${lives}`);
+      // 1. 공의 스피드를 늦췄습니다. (dx: 4 -> 3, dy: -4 -> -3)
+      ball = { x: width / 2, y: height - 40, dx: 3, dy: -3, r: 8 };
     }
   }
-
-  ctx.clearRect(0, 0, width, height);
-  drawPaddle();
-  drawBall();
-  drawBricks();
-  drawScore();
-
-  if (bricks.every(b => !b.visible)) {
-    endGame();
-  }
-
+  draw();
   requestAnimationFrame(update);
 }
 
-function startGame() {
-  gameRunning = true;
-  update();
+function updateScore() {
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+}
+
+function startQuiz() {
+  if (!gameRunning) return;
+  quizActive = true;
+  gameRunning = false;
+  const q = quizList[Math.floor(Math.random() * quizList.length)];
+  questionText.textContent = q.q;
+  quizBox.style.display = "flex";
+  timeLeft = 10;
+  timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+  quizTimer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(quizTimer);
+      checkAnswer(false, q.a);
+    }
+  }, 1000);
+  quizBox.dataset.answer = q.a;
+}
+
+function stopQuizTimer() {
+  if (quizTimer) clearInterval(quizTimer);
+}
+
+function answerQuiz(ans) {
+  stopQuizTimer();
+  const correct = quizBox.dataset.answer === "true";
+  checkAnswer(ans, correct);
+}
+
+function showResultMessage(text, color) {
+  resultMsg.textContent = text;
+  resultMsg.style.color = color;
+  resultMsg.style.display = "block";
+  pausedForResult = true;
+  setTimeout(() => {
+    resultMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
+  }, 1500);
+}
+
+function showLifeMessage(text) {
+  pausedForResult = true;
+  lifeMsg.textContent = text;
+  lifeMsg.style.display = "block";
+  setTimeout(() => {
+    lifeMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
+  }, 1500);
+}
+
+function checkAnswer(selected, correct) {
+  quizBox.style.display = "none";
+  quizActive = false;
+  if (selected === correct) {
+    score += 200;
+    showResultMessage("정답입니다!\n+200점", "#00ff88");
+  } else {
+    score -= 100;
+    lives--;
+    showResultMessage("오답입니다!\n-100점", "#ff5555");
+  }
+  updateScore();
+  if (lives <= 0) endGame();
+}
+
+function startQuizCycle() {
+  quizInterval = setInterval(() => {
+    if (gameRunning && !quizActive && !pausedForResult) startQuiz();
+  }, 10000);
+}
+
+function stopQuizCycle() {
+  if (quizInterval) clearInterval(quizInterval);
+}
+
+function resetGame() {
+  score = 0;
+  lives = 3;
+  createLogoBricks();
+  updateScore();
+  // 1. 공의 스피드를 늦췄습니다. (dx: 4 -> 3, dy: -4 -> -3)
+  ball = { x: width / 2, y: height - 40, dx: 3, dy: -3, r: 8 };
 }
 
 function endGame() {
+  stopQuizTimer();
+  stopQuizCycle();
   gameRunning = false;
-  document.getElementById("finalText").innerHTML =
-    `게임 종료!<br><br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
+  quizActive = false;
+  pausedForResult = false;
+  // 2. 게임 종료 후 문구를 줄바꿈하여 가독성을 높였습니다.
+  document.getElementById("finalText").innerHTML = `게임 종료!\n\n최종 점수: ${score}\n\n남은 라이프: ${lives}`;
   document.getElementById("finalResult").style.display = "flex";
 }
 
-document.getElementById("startButton").addEventListener("click", () => {
-  document.getElementById("startButton").style.display = "none";
-  startGame();
-});
+function returnToIntro() {
+  document.getElementById("finalResult").style.display = "none";
+  resetGame();
+  document.getElementById("intro").style.display = "flex";
+  document.getElementById("startBtn").style.display = "block";
+}
+
+createLogoBricks();
+setTimeout(() => {
+  document.getElementById("startBtn").style.display = "block";
+}, 3000);
+
+function startGame() {
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("finalResult").style.display = "none";
+  resetGame();
+  gameRunning = true;
+  startQuizCycle();
+  update();
+}
 </script>
 </body>
 </html>
