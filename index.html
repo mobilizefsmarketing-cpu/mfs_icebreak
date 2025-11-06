@@ -184,7 +184,8 @@ window.addEventListener("resize", () => {
   canvas.height = height;
 });
 
-let ball = { x: width / 2, y: height - 30, dx: 2, dy: -2, r: 8 };
+// 공의 속도를 1로 더 느리게 조정했습니다.
+let ball = { x: width / 2, y: height - 30, dx: 1, dy: -1, r: 8 };
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
 let score = 0, lives = 3;
@@ -300,7 +301,8 @@ function update() {
       return;
     } else {
       showLifeMessage(`라이프가 1 감소했습니다.\n\n남은 라이프: ${lives}`);
-      ball = { x: width / 2, y: height - 40, dx: 2, dy: -2, r: 8 };
+      // 공의 속도를 1로 더 느리게 조정했습니다.
+      ball = { x: width / 2, y: height - 40, dx: 1, dy: -1, r: 8 };
     }
   }
   draw();
@@ -396,7 +398,8 @@ function resetGame() {
   lives = 3;
   createLogoBricks();
   updateScore();
-  ball = { x: width / 2, y: height - 40, dx: 2, dy: -2, r: 8 };
+  // 공의 속도를 1로 더 느리게 조정했습니다.
+  ball = { x: width / 2, y: height - 40, dx: 1, dy: -1, r: 8 };
 }
 
 function endGame() {
@@ -405,8 +408,10 @@ function endGame() {
   gameRunning = false;
   quizActive = false;
   pausedForResult = false;
-  // 요청하신 대로 최종 결과 문구를 수정했습니다.
-  document.getElementById("finalText").innerHTML = `게임 종료!\n\n최종 점수: ${score}\n\n남은 라이프: ${lives}`;
+  
+  // 요청하신 대로 최종 결과 문구를 <br><br>을 사용하여 줄 간격을 반영했습니다.
+  document.getElementById("finalText").innerHTML = `게임 종료! <br><br> 최종 점수: ${score} <br><br> 남은 라이프: ${lives}`;
+  
   document.getElementById("finalResult").style.display = "flex";
 }
 
