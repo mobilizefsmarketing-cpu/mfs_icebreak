@@ -1,344 +1,315 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>모빌라이즈파이낸셜서비스코리아 아이스 브레이커 🎮</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>모빌라이즈파이낸셜서비스코리아 "아이스 브레이커"</title>
 <style>
   body {
     margin: 0;
     overflow: hidden;
-    background: radial-gradient(circle at center, #021425, #000);
+    background: radial-gradient(circle at center, #041630, #000);
     color: white;
     font-family: "Pretendard", sans-serif;
+    touch-action: none;
+  }
+  #gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    flex-direction: column;
   }
-  #intro, #quiz, #gameOver, #startScreen {
-    position: absolute;
-    text-align: center;
-    width: 100%;
-    top: 40%;
-    color: #4db8ff;
-    font-weight: bold;
-  }
-  #intro h1 {
-    font-size: 1.4em;
-    margin: 0.4em 0;
-    line-height: 1.5em;
-  }
-  #startButton {
-    background: #00bfff;
-    color: white;
-    font-size: 1.1em;
-    border: none;
-    padding: 12px 28px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  #startButton:hover { background: #0099cc; }
   canvas {
-    background: radial-gradient(circle at 30% 30%, #041a35, #000);
-    border: 3px solid #1e90ff;
-    border-radius: 12px;
-    display: block;
-    margin: auto;
+    border: 3px solid #39aaff;
+    border-radius: 15px;
+    background: radial-gradient(circle at 30% 30%, #062047, #000);
+    box-shadow: 0 0 20px #009dff;
     touch-action: none;
   }
-  #quiz {
-    display: none;
-    font-size: 1.2em;
-    color: white;
-    top: 30%;
-  }
-  #quiz button {
-    background: #00bfff;
-    color: white;
-    font-size: 1.3em;
-    border: none;
-    padding: 14px 26px;
-    margin: 0 20px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  #quiz button:hover {
-    background: #0099cc;
-  }
-  #timer {
-    color: #ff4444;
-    font-size: 1em;
-    margin-top: 15px;
-  }
-  #scoreboard {
+  #scoreBoard {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(0,0,0,0.6);
+    font-size: 16px;
+    background: rgba(0,0,0,0.5);
     padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.9em;
-  }
-  #gameOver {
-    display: none;
-    color: white;
-    top: 40%;
-  }
-  #retryBtn {
-    background: #ff5722;
-    color: white;
-    font-size: 1.1em;
-    border: none;
-    padding: 10px 20px;
     border-radius: 10px;
+  }
+  #intro {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #39aaff;
+    font-size: 1.5rem;
+    line-height: 2.5rem;
+    font-weight: bold;
+    z-index: 5;
+  }
+  #quiz {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 6;
+  }
+  #quiz h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .quiz-btn {
+    background: #00bfff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 8px;
+    font-size: 1rem;
     cursor: pointer;
+  }
+  #timer {
+    font-size: 1rem;
+    margin-top: 10px;
+    color: #ff6666;
   }
 </style>
 </head>
 <body>
-  <div id="intro">
-    <h1>모빌라이즈파이낸셜서비스코리아</h1>
-    <h1>아이스 브레이커</h1>
-    <h1>제공</h1>
-  </div>
-
-  <div id="startScreen" style="display:none;">
-    <button id="startButton">게임 시작하기</button>
-  </div>
-
-  <canvas id="gameCanvas" width="400" height="500" style="display:none;"></canvas>
-  <div id="scoreboard">점수: 0 | 라이프: 3</div>
-
-  <div id="quiz">
-    <div id="quizQuestion"></div>
-    <div style="margin-top:20px;">
-      <button id="btnO">O</button>
-      <button id="btnX">X</button>
+  <div id="gameContainer">
+    <div id="intro">
+      <div>모빌라이즈파이낸셜서비스코리아</div>
+      <div>"아이스 브레이커"</div>
+      <div>제공</div>
     </div>
-    <div id="timer"></div>
-  </div>
 
-  <div id="gameOver">
-    <h2>게임 오버!</h2>
-    <button id="retryBtn">재도전</button>
+    <div id="quiz">
+      <h2 id="questionText"></h2>
+      <button class="quiz-btn" onclick="answerQuiz(true)">O</button>
+      <button class="quiz-btn" onclick="answerQuiz(false)">X</button>
+      <div id="timer"></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="scoreBoard">점수: 0 | 라이프: 3</div>
   </div>
 
 <script>
-  const intro = document.getElementById("intro");
-  const startScreen = document.getElementById("startScreen");
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
-  const scoreboard = document.getElementById("scoreboard");
-  const quiz = document.getElementById("quiz");
-  const quizQuestion = document.getElementById("quizQuestion");
-  const timerDisplay = document.getElementById("timer");
-  const btnO = document.getElementById("btnO");
-  const btnX = document.getElementById("btnX");
-  const gameOverScreen = document.getElementById("gameOver");
-  const retryBtn = document.getElementById("retryBtn");
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-  let paddleWidth = 80, paddleHeight = 10;
-  let ballRadius = 6;
-  let x, y, dx, dy, paddleX;
-  let rightPressed = false, leftPressed = false;
-  let score = 0, lives = 3;
-  let gameRunning = false;
-  let quizTimer;
-  let showQuizInterval;
-  
-  const brickRowCount = 8;
-  const brickColumnCount = 10;
-  const brickWidth = 35;
-  const brickHeight = 15;
-  const brickPadding = 4;
-  const brickOffsetTop = 40;
-  const brickOffsetLeft = 15;
-  let bricks = [];
+let width = window.innerWidth * 0.9;
+let height = window.innerHeight * 0.6;
+canvas.width = width;
+canvas.height = height;
 
-  const questions = [
-    { q: "모빌라이즈파이낸셜서비스는 프랑스 회사다?", a: "O" },
-    { q: "그랑콜레오스 26년 생산기준 할부원금제한은 2500만원이다?", a: "O" },
-    { q: "모빌라이즈파이낸셜서비스는 르노코리아 공식 금융파트너이다?", a: "O" },
-    { q: "금융상품 금리는 모두 동일하다?", a: "X" }
-  ];
+window.addEventListener("resize", () => {
+  width = window.innerWidth * 0.9;
+  height = window.innerHeight * 0.6;
+  canvas.width = width;
+  canvas.height = height;
+});
 
-  function initBricks() {
-    bricks = [];
-    for(let c=0; c<brickColumnCount; c++) {
-      bricks[c] = [];
-      for(let r=0; r<brickRowCount; r++) {
-        const isOrange = (r === c || r === c-1);
-        bricks[c][r] = { x:0, y:0, status:1, color:isOrange ? "#ff5722" : "#00bfff" };
+let ball = { x: width / 2, y: height - 30, dx: 4, dy: -4, r: 8 };
+let paddle = { w: 80, h: 10, x: width / 2 - 40, speed: 0 };
+let bricks = [];
+let score = 0, lives = 3;
+let gameRunning = false;
+let quizActive = false;
+let quizTimer, timeLeft = 10;
+const quizBox = document.getElementById("quiz");
+const questionText = document.getElementById("questionText");
+const timerDisplay = document.getElementById("timer");
+
+const quizList = [
+  { q: "그랑콜레오스 26년 생산기준 3.3% 금리 할부원금제한은 2500만원 있다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스는 프랑스 회사다?", a: true },
+  { q: "잔가보장상품은 모빌라이즈파이낸셜서비스에만 있는 할부상품이다?", a: false }
+];
+
+// 터치 / 마우스 이동
+canvas.addEventListener("touchmove", e => {
+  const touch = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  paddle.x = touch.clientX - rect.left - paddle.w / 2;
+});
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  paddle.x = e.clientX - rect.left - paddle.w / 2;
+});
+
+function createLogoBricks() {
+  const brickW = 40, brickH = 16;
+  const cx = width / 2, cy = height / 3;
+  const outer = 160, inner = 90;
+  bricks = [];
+  for (let y = 40; y < height / 1.5; y += brickH + 4) {
+    for (let x = 40; x < width - 40; x += brickW + 4) {
+      const dx = x - cx, dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+      const circlePart = dist < outer && dist > inner && (angle < -0.5 || angle > 0.5);
+      const slash = Math.abs(dy + dx * 0.5) < 20;
+      if (circlePart || slash) {
+        bricks.push({x, y, w: brickW, h: brickH, color: slash ? "#ff3c00" : "#39aaff", visible: true});
       }
     }
   }
+}
 
-  function drawBricks() {
-    for(let c=0; c<brickColumnCount; c++) {
-      for(let r=0; r<brickRowCount; r++) {
-        if(bricks[c][r].status === 1) {
-          const brickX = c*(brickWidth+brickPadding)+brickOffsetLeft;
-          const brickY = r*(brickHeight+brickPadding)+brickOffsetTop;
-          bricks[c][r].x = brickX;
-          bricks[c][r].y = brickY;
-          ctx.fillStyle = bricks[c][r].color;
-          ctx.fillRect(brickX, brickY, brickWidth, brickHeight);
-        }
-      }
+function drawBricks() {
+  bricks.forEach(b => {
+    if (!b.visible) return;
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = b.color;
+  });
+  ctx.shadowBlur = 0;
+}
+
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = "#00ffff";
+  ctx.fill();
+  ctx.closePath();
+  ctx.shadowBlur = 0;
+}
+
+function drawPaddle() {
+  ctx.fillStyle = "#00ccff";
+  ctx.fillRect(paddle.x, height - 30, paddle.w, paddle.h);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, width, height);
+  drawBricks();
+  drawBall();
+  drawPaddle();
+}
+
+function update() {
+  if (!gameRunning || quizActive) return;
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  if (ball.x + ball.r > width || ball.x - ball.r < 0) ball.dx *= -1;
+  if (ball.y - ball.r < 0) ball.dy *= -1;
+
+  // 패들 충돌
+  if (
+    ball.y + ball.r > height - 30 &&
+    ball.x > paddle.x &&
+    ball.x < paddle.x + paddle.w
+  ) {
+    ball.dy = -Math.abs(ball.dy);
+  }
+
+  // 벽돌 충돌
+  bricks.forEach(b => {
+    if (b.visible &&
+        ball.x > b.x && ball.x < b.x + b.w &&
+        ball.y > b.y && ball.y < b.y + b.h) {
+      b.visible = false;
+      ball.dy *= -1;
+      score += 10;
+      document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
     }
-  }
+  });
 
-  function drawBall() {
-    ctx.beginPath();
-    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
-    ctx.fillStyle = "#66ccff";
-    ctx.fill();
-    ctx.closePath();
-  }
-
-  function drawPaddle() {
-    ctx.beginPath();
-    ctx.rect(paddleX, canvas.height - paddleHeight - 10, paddleWidth, paddleHeight);
-    ctx.fillStyle = "#00bfff";
-    ctx.fill();
-    ctx.closePath();
-  }
-
-  function draw() {
-    if(!gameRunning) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBricks();
-    drawBall();
-    drawPaddle();
-    collisionDetection();
-
-    if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) dx = -dx;
-    if(y + dy < ballRadius) dy = -dy;
-    else if(y + dy > canvas.height - ballRadius - 10) {
-      if(x > paddleX && x < paddleX + paddleWidth) {
-        dy = -dy;
-      } else {
-        lives--;
-        scoreboard.textContent = `점수: ${score} | 라이프: ${lives}`;
-        if(!lives) endGame();
-        else resetBall();
-      }
-    }
-
-    if(rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 6;
-    else if(leftPressed && paddleX > 0) paddleX -= 6;
-
-    x += dx;
-    y += dy;
-    requestAnimationFrame(draw);
-  }
-
-  function collisionDetection() {
-    for(let c=0; c<brickColumnCount; c++) {
-      for(let r=0; r<brickRowCount; r++) {
-        const b = bricks[c][r];
-        if(b.status === 1) {
-          if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
-            dy = -dy;
-            b.status = 0;
-            score += 10;
-            scoreboard.textContent = `점수: ${score} | 라이프: ${lives}`;
-          }
-        }
-      }
-    }
-  }
-
-  function resetBall() {
-    x = canvas.width/2;
-    y = canvas.height-30;
-    dx = 3 * (Math.random() > 0.5 ? 1 : -1);
-    dy = -3;
-    paddleX = (canvas.width - paddleWidth) / 2;
-  }
-
-  function startGame() {
-    score = 0; lives = 3;
-    scoreboard.textContent = `점수: ${score} | 라이프: ${lives}`;
-    canvas.style.display = "block";
-    gameOverScreen.style.display = "none";
-    initBricks();
-    resetBall();
-    gameRunning = true;
-    draw();
-    showQuizInterval = setInterval(showQuiz, 10000);
-  }
-
-  function showQuiz() {
-    const q = questions[Math.floor(Math.random()*questions.length)];
-    quizQuestion.textContent = q.q;
-    quiz.style.display = "block";
-    let timeLeft = 10;
-    timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
-    clearInterval(quizTimer);
-    quizTimer = setInterval(()=>{
-      timeLeft--;
-      timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
-      if(timeLeft<=0){ checkAnswer(null,q.a); }
-    },1000);
-
-    btnO.onclick = ()=>checkAnswer("O",q.a);
-    btnX.onclick = ()=>checkAnswer("X",q.a);
-  }
-
-  function checkAnswer(ans, correct) {
-    clearInterval(quizTimer);
-    quiz.style.display = "none";
-    if(ans===correct) {
-      score += 200;
+  if (ball.y > height) {
+    lives--;
+    document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+    if (lives <= 0) {
+      alert("게임 오버! 재도전하세요!");
+      resetGame();
     } else {
-      score -= 100;
-      lives--;
-      dx *= 1.2; dy *= 1.2;
+      ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
     }
-    scoreboard.textContent = `점수: ${score} | 라이프: ${lives}`;
-    if(lives<=0) endGame();
   }
+  draw();
+  requestAnimationFrame(update);
+}
 
-  function endGame() {
-    clearInterval(showQuizInterval);
-    gameRunning = false;
-    quiz.style.display = "none";
-    canvas.style.display = "none";
-    gameOverScreen.style.display = "block";
+// 🔸 퀴즈 관련
+function startQuiz() {
+  quizActive = true;
+  gameRunning = false;
+  const q = quizList[Math.floor(Math.random() * quizList.length)];
+  questionText.textContent = q.q;
+  quizBox.style.display = "flex";
+  timeLeft = 10;
+  timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+  quizTimer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(quizTimer);
+      checkAnswer(false, q.a);
+    }
+  }, 1000);
+  quizBox.dataset.answer = q.a;
+}
+
+function answerQuiz(ans) {
+  clearInterval(quizTimer);
+  const correct = quizBox.dataset.answer === "true";
+  checkAnswer(ans, correct);
+}
+
+function checkAnswer(selected, correct) {
+  quizBox.style.display = "none";
+  quizActive = false;
+  if (selected === correct) {
+    score += 200;
+  } else {
+    score -= 100;
+    lives--;
   }
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+  if (lives <= 0) {
+    alert("게임 오버! 재도전하세요!");
+    resetGame();
+  } else {
+    gameRunning = true;
+    update();
+  }
+}
 
-  document.addEventListener("keydown", e=>{
-    if(e.key==="Right" || e.key==="ArrowRight") rightPressed=true;
-    else if(e.key==="Left" || e.key==="ArrowLeft") leftPressed=true;
-  });
-  document.addEventListener("keyup", e=>{
-    if(e.key==="Right" || e.key==="ArrowRight") rightPressed=false;
-    else if(e.key==="Left" || e.key==="ArrowLeft") leftPressed=false;
-  });
+// 🔹 5초마다 퀴즈 등장
+setInterval(() => {
+  if (gameRunning && !quizActive) startQuiz();
+}, 5000);
 
-  canvas.addEventListener("touchmove", e=>{
-    const rect = canvas.getBoundingClientRect();
-    const touchX = e.touches[0].clientX - rect.left;
-    paddleX = touchX - paddleWidth/2;
-  });
+function resetGame() {
+  score = 0;
+  lives = 3;
+  createLogoBricks();
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+  ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
+  gameRunning = true;
+}
 
-  retryBtn.onclick = startGame;
+// 인트로 3초 후 시작
+createLogoBricks();
+setTimeout(() => {
+  document.getElementById("intro").style.display = "none";
+  gameRunning = true;
+  update();
+}, 3000);
 
-  // 인트로 → 3초 후 "게임 시작하기" 화면
-  setTimeout(()=>{
-    intro.style.display = "none";
-    startScreen.style.display = "block";
-  },3000);
-
-  document.getElementById("startButton").onclick = ()=>{
-    startScreen.style.display = "none";
-    startGame();
-  };
 </script>
 </body>
 </html>
