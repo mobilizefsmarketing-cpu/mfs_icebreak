@@ -51,6 +51,37 @@
     font-weight: bold;
     z-index: 5;
   }
+  #quiz {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 6;
+  }
+  #quiz h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .quiz-btn {
+    background: #00bfff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  #timer {
+    font-size: 1rem;
+    margin-top: 10px;
+    color: #ff6666;
+  }
 </style>
 </head>
 <body>
@@ -60,6 +91,14 @@
       <div>"아이스 브레이커"</div>
       <div>제공</div>
     </div>
+
+    <div id="quiz">
+      <h2 id="questionText"></h2>
+      <button class="quiz-btn" onclick="answerQuiz(true)">O</button>
+      <button class="quiz-btn" onclick="answerQuiz(false)">X</button>
+      <div id="timer"></div>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
     <div id="scoreBoard">점수: 0 | 라이프: 3</div>
   </div>
@@ -85,6 +124,17 @@ let paddle = { w: 80, h: 10, x: width / 2 - 40, speed: 0 };
 let bricks = [];
 let score = 0, lives = 3;
 let gameRunning = false;
+let quizActive = false;
+let quizTimer, timeLeft = 10;
+const quizBox = document.getElementById("quiz");
+const questionText = document.getElementById("questionText");
+const timerDisplay = document.getElementById("timer");
+
+const quizList = [
+  { q: "그랑콜레오스 26년 생산기준 3.3% 금리 할부원금제한은 2500만원 있다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스는 프랑스 회사다?", a: true },
+  { q: "잔가보장상품은 모빌라이즈파이낸셜서비스에만 있는 할부상품이다?", a: false }
+];
 
 // 터치 / 마우스 이동
 canvas.addEventListener("touchmove", e => {
@@ -151,7 +201,7 @@ function draw() {
 }
 
 function update() {
-  if (!gameRunning) return;
+  if (!gameRunning || quizActive) return;
   ball.x += ball.dx;
   ball.y += ball.dy;
 
@@ -192,6 +242,56 @@ function update() {
   draw();
   requestAnimationFrame(update);
 }
+
+// 🔸 퀴즈 관련
+function startQuiz() {
+  quizActive = true;
+  gameRunning = false;
+  const q = quizList[Math.floor(Math.random() * quizList.length)];
+  questionText.textContent = q.q;
+  quizBox.style.display = "flex";
+  timeLeft = 10;
+  timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+  quizTimer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(quizTimer);
+      checkAnswer(false, q.a);
+    }
+  }, 1000);
+  quizBox.dataset.answer = q.a;
+}
+
+function answerQuiz(ans) {
+  clearInterval(quizTimer);
+  const correct = quizBox.dataset.answer === "true";
+  checkAnswer(ans, correct);
+}
+
+function checkAnswer(selected, correct) {
+  quizBox.style.display = "none";
+  quizActive = false;
+  if (selected === correct) {
+    score += 200;
+  } else {
+    score -= 100;
+    lives--;
+  }
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+  if (lives <= 0) {
+    alert("게임 오버! 재도전하세요!");
+    resetGame();
+  } else {
+    gameRunning = true;
+    update();
+  }
+}
+
+// 🔹 5초마다 퀴즈 등장
+setInterval(() => {
+  if (gameRunning && !quizActive) startQuiz();
+}, 5000);
 
 function resetGame() {
   score = 0;
