@@ -60,6 +60,7 @@
     padding: 12px 24px;
     font-size: 1.1rem;
     cursor: pointer;
+    display: block; /* ✅ 즉시 표시 */
   }
   #quiz {
     position: absolute;
@@ -147,7 +148,7 @@
       <div>모빌라이즈파이낸셜서비스</div>
       <div>제공</div>
       <div>"아이스 브레이커"</div>
-      <button id="startBtn" style="display:none;" onclick="startGame()">게임 시작하기</button>
+      <button id="startBtn" onclick="startGame()">게임 시작하기</button>
     </div>
 
     <div id="quiz">
@@ -185,7 +186,7 @@ window.addEventListener("resize", () => {
   canvas.height = height;
 });
 
-let ball = { x: width / 2, y: height - 30, dx: 2.5, dy: -2.5, r: 8 }; // 🔹 속도 낮춤
+let ball = { x: width / 2, y: height - 30, dx: 2.5, dy: -2.5, r: 8 }; // ✅ 속도 느리게
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
 let score = 0, lives = 3;
@@ -301,7 +302,7 @@ function update() {
       return;
     } else {
       showLifeMessage(`라이프가 1 감소했습니다.\n남은 라이프: ${lives}`);
-      ball = { x: width / 2, y: height - 40, dx: 2.5, dy: -2.5, r: 8 }; // 속도 일관성 유지
+      ball = { x: width / 2, y: height - 40, dx: 2.5, dy: -2.5, r: 8 };
     }
   }
   draw();
@@ -319,7 +320,7 @@ function endGame() {
   quizActive = false;
   pausedForResult = false;
   document.getElementById("finalText").innerHTML = 
-    `게임 종료<br>최종 점수: ${score}<br>남은 라이프: ${lives}`; // 🔹 줄바꿈 HTML 처리
+    `게임 종료<br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
   document.getElementById("finalResult").style.display = "flex";
 }
 
@@ -344,11 +345,9 @@ function returnToIntro() {
   document.getElementById("finalResult").style.display = "none";
   resetGame();
   document.getElementById("intro").style.display = "flex";
-  document.getElementById("startBtn").style.display = "block";
 }
 
-// 퀴즈 관련 함수는 동일
-function startQuiz() { ... } // (생략 가능, 동일)
+createLogoBricks();
 </script>
 </body>
 </html>
