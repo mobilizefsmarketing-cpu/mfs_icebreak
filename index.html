@@ -105,7 +105,6 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /* 2. 폰트 크기 및 패딩 조정으로 가독성 개선 */
     font-size: 1.4rem; 
     font-weight: bold;
     background: rgba(0,0,0,0.7);
@@ -185,7 +184,6 @@ window.addEventListener("resize", () => {
   canvas.height = height;
 });
 
-// 1. 공의 스피드를 3에서 2로 더 늦췄습니다.
 let ball = { x: width / 2, y: height - 30, dx: 2, dy: -2, r: 8 };
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
@@ -301,9 +299,7 @@ function update() {
       endGame();
       return;
     } else {
-      // 2. 라이프 메시지 줄바꿈 및 가독성 개선
       showLifeMessage(`라이프가 1 감소했습니다.\n\n남은 라이프: ${lives}`);
-      // 1. 공의 스피드 조정
       ball = { x: width / 2, y: height - 40, dx: 2, dy: -2, r: 8 };
     }
   }
@@ -375,12 +371,10 @@ function checkAnswer(selected, correct) {
   quizActive = false;
   if (selected === correct) {
     score += 200;
-    // 2. 정답 메시지 줄바꿈 및 가독성 개선
     showResultMessage("정답입니다!\n\n+200점", "#00ff88");
   } else {
     score -= 100;
     lives--;
-    // 2. 오답 메시지 줄바꿈 및 가독성 개선
     showResultMessage("오답입니다!\n\n-100점", "#ff5555");
   }
   updateScore();
@@ -402,7 +396,6 @@ function resetGame() {
   lives = 3;
   createLogoBricks();
   updateScore();
-  // 1. 공의 스피드 조정
   ball = { x: width / 2, y: height - 40, dx: 2, dy: -2, r: 8 };
 }
 
@@ -412,7 +405,7 @@ function endGame() {
   gameRunning = false;
   quizActive = false;
   pausedForResult = false;
-  // 게임 종료 메시지는 이전 요청에 따라 이미 가독성 좋게 수정되어 있습니다.
+  // 요청하신 대로 최종 결과 문구를 수정했습니다.
   document.getElementById("finalText").innerHTML = `게임 종료!\n\n최종 점수: ${score}\n\n남은 라이프: ${lives}`;
   document.getElementById("finalResult").style.display = "flex";
 }
