@@ -101,9 +101,9 @@
 <body>
   <div id="gameContainer">
     <div id="intro">
-      <div>모빌라이즈파이낸셜서비스코리아</div>
-      <div>"아이스 브레이커"</div>
+      <div>모빌라이즈파이낸셜서비스</div>
       <div>제공</div>
+      <div>"아이스 브레이커"</div>
       <button id="startBtn" style="display:none;" onclick="startGame()">게임 시작하기</button>
     </div>
 
@@ -251,8 +251,9 @@ function update() {
     document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
     if (lives <= 0) {
       stopQuizTimer();
+      stopQuizCycle();
       alert("게임 오버! 재도전하세요!");
-      resetGame();
+      returnToIntro();
     } else {
       ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
     }
@@ -305,8 +306,9 @@ function checkAnswer(selected, correct) {
   document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
   if (lives <= 0) {
     stopQuizTimer();
+    stopQuizCycle();
     alert("게임 오버! 재도전하세요!");
-    resetGame();
+    returnToIntro();
   } else {
     gameRunning = true;
     update();
@@ -331,11 +333,15 @@ function resetGame() {
   createLogoBricks();
   document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
   ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
-  stopQuizCycle();
+}
+
+function returnToIntro() {
+  resetGame();
+  gameRunning = false;
   stopQuizTimer();
-  gameRunning = true;
-  startQuizCycle();
-  update();
+  stopQuizCycle();
+  document.getElementById("intro").style.display = "flex";
+  document.getElementById("startBtn").style.display = "block";
 }
 
 // 인트로 3초 후 시작 버튼 표시
