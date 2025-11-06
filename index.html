@@ -105,10 +105,11 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1.8rem;
+    /* 2. 폰트 크기 및 패딩 조정으로 가독성 개선 */
+    font-size: 1.4rem; 
     font-weight: bold;
     background: rgba(0,0,0,0.7);
-    padding: 20px 30px;
+    padding: 15px 25px; 
     border-radius: 12px;
     display: none;
     z-index: 8;
@@ -184,8 +185,8 @@ window.addEventListener("resize", () => {
   canvas.height = height;
 });
 
-// 1. 공의 스피드를 늦췄습니다. (dx: 4 -> 3, dy: -4 -> -3)
-let ball = { x: width / 2, y: height - 30, dx: 3, dy: -3, r: 8 };
+// 1. 공의 스피드를 3에서 2로 더 늦췄습니다.
+let ball = { x: width / 2, y: height - 30, dx: 2, dy: -2, r: 8 };
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
 let score = 0, lives = 3;
@@ -300,9 +301,10 @@ function update() {
       endGame();
       return;
     } else {
-      showLifeMessage(`라이프가 1 감소했습니다.\n남은 라이프: ${lives}`);
-      // 1. 공의 스피드를 늦췄습니다. (dx: 4 -> 3, dy: -4 -> -3)
-      ball = { x: width / 2, y: height - 40, dx: 3, dy: -3, r: 8 };
+      // 2. 라이프 메시지 줄바꿈 및 가독성 개선
+      showLifeMessage(`라이프가 1 감소했습니다.\n\n남은 라이프: ${lives}`);
+      // 1. 공의 스피드 조정
+      ball = { x: width / 2, y: height - 40, dx: 2, dy: -2, r: 8 };
     }
   }
   draw();
@@ -373,11 +375,13 @@ function checkAnswer(selected, correct) {
   quizActive = false;
   if (selected === correct) {
     score += 200;
-    showResultMessage("정답입니다!\n+200점", "#00ff88");
+    // 2. 정답 메시지 줄바꿈 및 가독성 개선
+    showResultMessage("정답입니다!\n\n+200점", "#00ff88");
   } else {
     score -= 100;
     lives--;
-    showResultMessage("오답입니다!\n-100점", "#ff5555");
+    // 2. 오답 메시지 줄바꿈 및 가독성 개선
+    showResultMessage("오답입니다!\n\n-100점", "#ff5555");
   }
   updateScore();
   if (lives <= 0) endGame();
@@ -398,8 +402,8 @@ function resetGame() {
   lives = 3;
   createLogoBricks();
   updateScore();
-  // 1. 공의 스피드를 늦췄습니다. (dx: 4 -> 3, dy: -4 -> -3)
-  ball = { x: width / 2, y: height - 40, dx: 3, dy: -3, r: 8 };
+  // 1. 공의 스피드 조정
+  ball = { x: width / 2, y: height - 40, dx: 2, dy: -2, r: 8 };
 }
 
 function endGame() {
@@ -408,7 +412,7 @@ function endGame() {
   gameRunning = false;
   quizActive = false;
   pausedForResult = false;
-  // 2. 게임 종료 후 문구를 줄바꿈하여 가독성을 높였습니다.
+  // 게임 종료 메시지는 이전 요청에 따라 이미 가독성 좋게 수정되어 있습니다.
   document.getElementById("finalText").innerHTML = `게임 종료!\n\n최종 점수: ${score}\n\n남은 라이프: ${lives}`;
   document.getElementById("finalResult").style.display = "flex";
 }
