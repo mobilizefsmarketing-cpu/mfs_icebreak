@@ -145,8 +145,7 @@ function initGame() {
   paddleX = (canvas.width - 70) / 2;
   ballX = canvas.width / 2;
   ballY = canvas.height - 40;
-  ballSpeedX = 1.5;  // ✅ 느리게 조정
-  ballSpeedY = -1.5; // ✅ 느리게 조정
+  ballSpeedX = 1; ballSpeedY = -1;
   for (let c = 0; c < brickColumnCount; c++) {
     bricks[c] = [];
     for (let r = 0; r < brickRowCount; r++) {
@@ -248,8 +247,8 @@ function showLifePopup() {
 function resetBall() {
   ballX = canvas.width / 2;
   ballY = canvas.height - 40;
-  ballSpeedX = 1.5; // ✅ 느리게
-  ballSpeedY = -1.5; // ✅ 느리게
+  ballSpeedX = 2;
+  ballSpeedY = -2;
 }
 
 function showQuiz() {
