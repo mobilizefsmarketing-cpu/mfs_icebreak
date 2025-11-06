@@ -1,305 +1,434 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>모빌라이즈파이낸셜서비스코리아 아이스브레이커 🎮</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>모빌라이즈파이낸셜서비스코리아 "아이스 브레이커"</title>
 <style>
   body {
     margin: 0;
-    background: radial-gradient(circle at 30% 30%, #04122a, #000);
+    overflow: hidden;
+    background: radial-gradient(circle at center, #041630, #000);
     color: white;
     font-family: "Pretendard", sans-serif;
-    overflow: hidden;
-    text-align: center;
+    touch-action: none;
   }
-  #intro, #gameOver, #quizPopup, #lifePopup, #resultPopup {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
+  #gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  #intro h1 { font-size: 1.5em; color: #00aaff; margin: 10px 0; }
-  #startBtn, #restartBtn {
-    background: #00aaff;
-    border: none;
-    color: white;
-    padding: 12px 28px;
-    border-radius: 10px;
-    font-size: 1em;
-    cursor: pointer;
-  }
-  #gameCanvas {
-    display: block;
-    margin: 80px auto 0 auto;
-    border: 3px solid #00aaff;
-    border-radius: 10px;
-    background: rgba(0,0,0,0.4);
+  canvas {
+    border: 3px solid #39aaff;
+    border-radius: 15px;
+    background: radial-gradient(circle at 30% 30%, #062047, #000);
+    box-shadow: 0 0 20px #009dff;
+    touch-action: none;
   }
   #scoreBoard {
     position: absolute;
-    top: 10px; right: 10px;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
     background: rgba(0,0,0,0.5);
-    padding: 5px 15px;
+    padding: 6px 12px;
     border-radius: 10px;
-    font-size: 0.9em;
   }
-  .popup {
-    font-size: 1.3em;
-    line-height: 1.5em;
-    background: rgba(0,0,0,0.7);
-    padding: 20px;
-    border-radius: 15px;
-    display: none;
-  }
-  #quizPopup button {
-    display: inline-block;
-    margin: 15px 10px;
-    padding: 15px 30px;
-    font-size: 1.2em;
+  #intro {
+    position: absolute;
+    inset: 0;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #39aaff;
+    font-size: 1.6rem;
+    line-height: 2.5rem;
     font-weight: bold;
-    border-radius: 10px;
-    border: none;
-    background: #00aaff;
+    z-index: 5;
+  }
+  #startBtn {
+    margin-top: 30px;
+    background: #00bfff;
     color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 1.1rem;
     cursor: pointer;
   }
-  #timer { color: #ff4444; margin-top: 10px; font-size: 1em; }
+  #quiz {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 6;
+    padding: 0 20px;
+  }
+  #quiz h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+    line-height: 1.6rem;
+    word-break: keep-all;
+    white-space: pre-line;
+  }
+  .quiz-btn-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+  }
+  .quiz-btn {
+    background: #00bfff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  #timer {
+    font-size: 1rem;
+    margin-top: 10px;
+    color: #ff6666;
+  }
+  #resultMsg, #lifeMsg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.8rem;
+    font-weight: bold;
+    background: rgba(0,0,0,0.7);
+    padding: 20px 30px;
+    border-radius: 12px;
+    display: none;
+    z-index: 8;
+    text-align: center;
+    white-space: pre-line;
+  }
+  #finalResult {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    color: #39aaff;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    z-index: 7;
+    text-align: center;
+  }
+  #retryBtn {
+    margin-top: 20px;
+    background: #00bfff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
+  <div id="gameContainer">
+    <div id="intro">
+      <div>모빌라이즈파이낸셜서비스</div>
+      <div>제공</div>
+      <div>"아이스 브레이커"</div>
+      <button id="startBtn" style="display:none;" onclick="startGame()">게임 시작하기</button>
+    </div>
 
-<div id="intro">
-  <h1>모빌라이즈파이낸셜서비스</h1>
-  <h1>제공</h1>
-  <h1>"아이스브레이커"</h1>
-  <button id="startBtn">게임 시작하기</button>
-</div>
+    <div id="quiz">
+      <h2 id="questionText"></h2>
+      <div class="quiz-btn-container">
+        <button class="quiz-btn" onclick="answerQuiz(true)">O</button>
+        <button class="quiz-btn" onclick="answerQuiz(false)">X</button>
+      </div>
+      <div id="timer"></div>
+    </div>
 
-<canvas id="gameCanvas" width="400" height="500"></canvas>
-<div id="scoreBoard">점수: 0 | 라이프: 3</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="scoreBoard">점수: 0 | 라이프: 3</div>
+    <div id="resultMsg"></div>
+    <div id="lifeMsg"></div>
 
-<div id="quizPopup" class="popup">
-  <div id="quizQuestion"></div>
-  <div>
-    <button id="btnO">O</button>
-    <button id="btnX">X</button>
+    <div id="finalResult">
+      <div id="finalText"></div>
+      <button id="retryBtn" onclick="returnToIntro()">다시 도전하기</button>
+    </div>
   </div>
-  <div id="timer"></div>
-</div>
-
-<div id="lifePopup" class="popup"></div>
-<div id="resultPopup" class="popup"></div>
-
-<div id="gameOver" class="popup">
-  <div id="finalText"></div>
-  <button id="restartBtn">다시 도전하기</button>
-</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const startBtn = document.getElementById("startBtn");
-const restartBtn = document.getElementById("restartBtn");
-const intro = document.getElementById("intro");
-const gameOver = document.getElementById("gameOver");
-const scoreBoard = document.getElementById("scoreBoard");
-const quizPopup = document.getElementById("quizPopup");
-const quizQuestion = document.getElementById("quizQuestion");
-const btnO = document.getElementById("btnO");
-const btnX = document.getElementById("btnX");
-const timerText = document.getElementById("timer");
-const lifePopup = document.getElementById("lifePopup");
-const resultPopup = document.getElementById("resultPopup");
-const finalText = document.getElementById("finalText");
+let width = window.innerWidth * 0.9;
+let height = window.innerHeight * 0.6;
+canvas.width = width;
+canvas.height = height;
 
-let paddleX, ballX, ballY, ballSpeedX, ballSpeedY;
-let rightPressed = false, leftPressed = false;
-let score = 0, lives = 3, gameInterval;
-let ballRadius = 6;
-let paused = false;
+window.addEventListener("resize", () => {
+  width = window.innerWidth * 0.9;
+  height = window.innerHeight * 0.6;
+  canvas.width = width;
+  canvas.height = height;
+});
 
-const bricks = [];
-const brickRowCount = 6;
-const brickColumnCount = 8;
-const brickWidth = 40;
-const brickHeight = 15;
-const brickPadding = 6;
-const brickOffsetTop = 30;
-const brickOffsetLeft = 18;
+let ball = { x: width / 2, y: height - 30, dx: 4, dy: -4, r: 8 };
+let paddle = { w: 80, h: 10, x: width / 2 - 40 };
+let bricks = [];
+let score = 0, lives = 3;
+let gameRunning = false;
+let quizActive = false;
+let quizTimer, timeLeft = 10;
+let quizInterval;
+let pausedForResult = false;
+
+const quizBox = document.getElementById("quiz");
+const questionText = document.getElementById("questionText");
+const timerDisplay = document.getElementById("timer");
+const resultMsg = document.getElementById("resultMsg");
+const lifeMsg = document.getElementById("lifeMsg");
 
 const quizList = [
+  { q: "그랑콜레오스 26년 생산기준\n3.3% 금리 할부원금제한은\n2500만원 있다?", a: true },
   { q: "모빌라이즈파이낸셜서비스는\n프랑스 회사다?", a: true },
-  { q: "모빌라이즈파이낸셜서비스코리아는\n르노코리아자동차의\n공식 금융 파트너다?", a: true },
-  { q: "모빌라이즈파이낸셜서비스는\n자동차 보험을 직접 판매한다?", a: false },
+  { q: "잔가보장상품은\n모빌라이즈파이낸셜서비스에만 있는\n할부상품이다?", a: false }
 ];
 
-let quizTimer;
-let quizIndex = 0;
+canvas.addEventListener("touchmove", e => {
+  const touch = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  paddle.x = touch.clientX - rect.left - paddle.w / 2;
+});
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  paddle.x = e.clientX - rect.left - paddle.w / 2;
+});
 
-function initGame() {
-  intro.style.display = "none";
-  gameOver.style.display = "none";
-  score = 0; lives = 3;
-  scoreBoard.textContent = `점수: ${score} | 라이프: ${lives}`;
-  paddleX = (canvas.width - 70) / 2;
-  ballX = canvas.width / 2;
-  ballY = canvas.height - 40;
-  ballSpeedX = 2; ballSpeedY = -2;
-  for (let c = 0; c < brickColumnCount; c++) {
-    bricks[c] = [];
-    for (let r = 0; r < brickRowCount; r++) {
-      bricks[c][r] = { x: 0, y: 0, status: 1 };
-    }
-  }
-  document.addEventListener("keydown", keyDownHandler);
-  document.addEventListener("keyup", keyUpHandler);
-  document.addEventListener("mousemove", mouseMoveHandler);
-  clearInterval(gameInterval);
-  gameInterval = setInterval(draw, 10);
-  setInterval(showQuiz, 10000);
-}
-
-function keyDownHandler(e) {
-  if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
-  else if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = true;
-}
-function keyUpHandler(e) {
-  if (e.key === "Right" || e.key === "ArrowRight") rightPressed = false;
-  else if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = false;
-}
-function mouseMoveHandler(e) {
-  let relativeX = e.clientX - canvas.offsetLeft;
-  if (relativeX > 35 && relativeX < canvas.width - 35) paddleX = relativeX - 35;
-}
-
-function drawBall() {
-  ctx.beginPath();
-  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = "#00aaff";
-  ctx.fill();
-  ctx.closePath();
-}
-function drawPaddle() {
-  ctx.beginPath();
-  ctx.rect(paddleX, canvas.height - 15, 70, 8);
-  ctx.fillStyle = "#00ccff";
-  ctx.fill();
-  ctx.closePath();
-}
-function drawBricks() {
-  for (let c = 0; c < brickColumnCount; c++) {
-    for (let r = 0; r < brickRowCount; r++) {
-      if (bricks[c][r].status === 1) {
-        const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
-        const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
-        bricks[c][r].x = brickX;
-        bricks[c][r].y = brickY;
-        const color = r < 3 ? "#00ccff" : "#ff6644";
-        ctx.beginPath();
-        ctx.rect(brickX, brickY, brickWidth, brickHeight);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.closePath();
+function createLogoBricks() {
+  const brickW = 40, brickH = 16;
+  const cx = width / 2, cy = height / 3;
+  const outer = 160, inner = 90;
+  bricks = [];
+  for (let y = 40; y < height / 1.5; y += brickH + 4) {
+    for (let x = 40; x < width - 40; x += brickW + 4) {
+      const dx = x - cx, dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+      const circlePart = dist < outer && dist > inner && (angle < -0.5 || angle > 0.5);
+      const slash = Math.abs(dy + dx * 0.5) < 20;
+      if (circlePart || slash) {
+        bricks.push({x, y, w: brickW, h: brickH, color: slash ? "#ff3c00" : "#39aaff", visible: true});
       }
     }
   }
 }
 
+function drawBricks() {
+  bricks.forEach(b => {
+    if (!b.visible) return;
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = b.color;
+  });
+  ctx.shadowBlur = 0;
+}
+
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = "#00ffff";
+  ctx.fill();
+  ctx.closePath();
+  ctx.shadowBlur = 0;
+}
+
+function drawPaddle() {
+  ctx.fillStyle = "#00ccff";
+  ctx.fillRect(paddle.x, height - 30, paddle.w, paddle.h);
+}
+
 function draw() {
-  if (paused) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, width, height);
   drawBricks();
   drawBall();
   drawPaddle();
+}
 
-  if (ballX + ballSpeedX > canvas.width - ballRadius || ballX + ballSpeedX < ballRadius) {
-    ballSpeedX = -ballSpeedX;
+function update() {
+  if (!gameRunning || quizActive || pausedForResult) return;
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  if (ball.x + ball.r > width || ball.x - ball.r < 0) ball.dx *= -1;
+  if (ball.y - ball.r < 0) ball.dy *= -1;
+
+  if (ball.y + ball.r > height - 30 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
+    ball.dy = -Math.abs(ball.dy);
   }
-  if (ballY + ballSpeedY < ballRadius) {
-    ballSpeedY = -ballSpeedY;
-  } else if (ballY + ballSpeedY > canvas.height - ballRadius - 8) {
-    if (ballX > paddleX && ballX < paddleX + 70) {
-      ballSpeedY = -ballSpeedY;
+
+  bricks.forEach(b => {
+    if (b.visible &&
+        ball.x > b.x && ball.x < b.x + b.w &&
+        ball.y > b.y && ball.y < b.y + b.h) {
+      b.visible = false;
+      ball.dy *= -1;
+      score += 10;
+      updateScore();
+    }
+  });
+
+  if (ball.y > height) {
+    lives--;
+    updateScore();
+    if (lives <= 0) {
+      endGame();
+      return;
     } else {
-      lives--;
-      showLifePopup();
-      if (!lives) endGame();
-      else resetBall();
+      showLifeMessage(`라이프가 1 감소했습니다.\n남은 라이프: ${lives}`);
+      ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
     }
   }
-
-  ballX += ballSpeedX;
-  ballY += ballSpeedY;
-  scoreBoard.textContent = `점수: ${score} | 라이프: ${lives}`;
+  draw();
+  requestAnimationFrame(update);
 }
 
-function showLifePopup() {
-  paused = true;
-  lifePopup.innerHTML = `라이프가 1 감소했습니다.<br>남은 라이프: ${lives}`;
-  lifePopup.style.display = "block";
+function updateScore() {
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+}
+
+function startQuiz() {
+  if (!gameRunning) return;
+  quizActive = true;
+  gameRunning = false;
+  const q = quizList[Math.floor(Math.random() * quizList.length)];
+  questionText.textContent = q.q;
+  quizBox.style.display = "flex";
+  timeLeft = 10;
+  timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+  quizTimer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `남은 시간: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(quizTimer);
+      checkAnswer(false, q.a);
+    }
+  }, 1000);
+  quizBox.dataset.answer = q.a;
+}
+
+function stopQuizTimer() {
+  if (quizTimer) clearInterval(quizTimer);
+}
+
+function answerQuiz(ans) {
+  stopQuizTimer();
+  const correct = quizBox.dataset.answer === "true";
+  checkAnswer(ans, correct);
+}
+
+function showResultMessage(text, color) {
+  resultMsg.textContent = text;
+  resultMsg.style.color = color;
+  resultMsg.style.display = "block";
+  pausedForResult = true;
   setTimeout(() => {
-    lifePopup.style.display = "none";
-    paused = false;
+    resultMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
   }, 1500);
 }
 
-function resetBall() {
-  ballX = canvas.width / 2;
-  ballY = canvas.height - 40;
-  ballSpeedX = 2;
-  ballSpeedY = -2;
+function showLifeMessage(text) {
+  pausedForResult = true;
+  lifeMsg.textContent = text;
+  lifeMsg.style.display = "block";
+  setTimeout(() => {
+    lifeMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
+  }, 1500);
 }
 
-function showQuiz() {
-  if (paused) return;
-  paused = true;
-  quizPopup.style.display = "block";
-  const current = quizList[quizIndex % quizList.length];
-  quizQuestion.innerText = current.q;
-  quizIndex++;
-  let time = 10;
-  timerText.innerText = `남은 시간: ${time}s`;
-  quizTimer = setInterval(() => {
-    time--;
-    timerText.innerText = `남은 시간: ${time}s`;
-    if (time <= 0) { checkAnswer(null, current.a); }
-  }, 1000);
-  btnO.onclick = () => checkAnswer(true, current.a);
-  btnX.onclick = () => checkAnswer(false, current.a);
-}
-
-function checkAnswer(answer, correct) {
-  clearInterval(quizTimer);
-  quizPopup.style.display = "none";
-  let text = "";
-  if (answer === correct) {
+function checkAnswer(selected, correct) {
+  quizBox.style.display = "none";
+  quizActive = false;
+  if (selected === correct) {
     score += 200;
-    text = "정답입니다!<br>+200점";
+    showResultMessage("정답입니다!\n+200점", "#00ff88");
   } else {
     score -= 100;
-    text = "오답입니다!<br>-100점";
+    lives--;
+    showResultMessage("오답입니다!\n-100점", "#ff5555");
   }
-  resultPopup.innerHTML = text;
-  resultPopup.style.display = "block";
-  setTimeout(() => {
-    resultPopup.style.display = "none";
-    paused = false;
-  }, 1500);
+  updateScore();
+  if (lives <= 0) endGame();
+}
+
+function startQuizCycle() {
+  quizInterval = setInterval(() => {
+    if (gameRunning && !quizActive && !pausedForResult) startQuiz();
+  }, 10000);
+}
+
+function stopQuizCycle() {
+  if (quizInterval) clearInterval(quizInterval);
+}
+
+function resetGame() {
+  score = 0;
+  lives = 3;
+  createLogoBricks();
+  updateScore();
+  ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
 }
 
 function endGame() {
-  clearInterval(gameInterval);
-  paused = true;
-  gameOver.style.display = "block";
-  finalText.innerHTML = `게임 종료!<br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
+  stopQuizTimer();
+  stopQuizCycle();
+  gameRunning = false;
+  quizActive = false;
+  pausedForResult = false;
+  document.getElementById("finalText").innerHTML = `게임 종료!\n최종 점수: ${score}\n남은 라이프: ${lives}`;
+  document.getElementById("finalResult").style.display = "flex";
 }
 
-startBtn.onclick = initGame;
-restartBtn.onclick = () => {
-  gameOver.style.display = "none";
-  intro.style.display = "block";
-};
+function returnToIntro() {
+  document.getElementById("finalResult").style.display = "none";
+  resetGame();
+  document.getElementById("intro").style.display = "flex";
+  document.getElementById("startBtn").style.display = "block";
+}
+
+createLogoBricks();
+setTimeout(() => {
+  document.getElementById("startBtn").style.display = "block";
+}, 3000);
+
+function startGame() {
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("finalResult").style.display = "none";
+  resetGame();
+  gameRunning = true;
+  startQuizCycle();
+  update();
+}
 </script>
 </body>
 </html>
