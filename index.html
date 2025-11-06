@@ -39,14 +39,14 @@
   }
   #intro {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0;
     background: black;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color: #39aaff;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     line-height: 2.5rem;
     font-weight: bold;
     z-index: 5;
@@ -63,7 +63,7 @@
   }
   #quiz {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0;
     background: rgba(0,0,0,0.85);
     color: white;
     display: none;
@@ -72,10 +72,14 @@
     align-items: center;
     text-align: center;
     z-index: 6;
+    padding: 0 20px;
   }
   #quiz h2 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+    line-height: 1.6rem;
+    word-break: keep-all;
+    white-space: pre-line;
   }
   .quiz-btn-container {
     display: flex;
@@ -96,7 +100,7 @@
     margin-top: 10px;
     color: #ff6666;
   }
-  #resultMsg {
+  #resultMsg, #lifeMsg {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -108,10 +112,12 @@
     border-radius: 12px;
     display: none;
     z-index: 8;
+    text-align: center;
+    white-space: pre-line;
   }
   #finalResult {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0;
     background: rgba(0,0,0,0.9);
     color: #39aaff;
     display: none;
@@ -120,6 +126,7 @@
     align-items: center;
     font-size: 1.5rem;
     z-index: 7;
+    text-align: center;
   }
   #retryBtn {
     margin-top: 20px;
@@ -154,6 +161,7 @@
     <canvas id="gameCanvas"></canvas>
     <div id="scoreBoard">점수: 0 | 라이프: 3</div>
     <div id="resultMsg"></div>
+    <div id="lifeMsg"></div>
 
     <div id="finalResult">
       <div id="finalText"></div>
@@ -190,11 +198,12 @@ const quizBox = document.getElementById("quiz");
 const questionText = document.getElementById("questionText");
 const timerDisplay = document.getElementById("timer");
 const resultMsg = document.getElementById("resultMsg");
+const lifeMsg = document.getElementById("lifeMsg");
 
 const quizList = [
-  { q: "그랑콜레오스 26년 생산기준 3.3% 금리 할부원금제한은 2500만원 있다?", a: true },
-  { q: "모빌라이즈파이낸셜서비스는 프랑스 회사다?", a: true },
-  { q: "잔가보장상품은 모빌라이즈파이낸셜서비스에만 있는 할부상품이다?", a: false }
+  { q: "그랑콜레오스 26년 생산기준\n3.3% 금리 할부원금제한은\n2500만원 있다?", a: true },
+  { q: "모빌라이즈파이낸셜서비스는\n프랑스 회사다?", a: true },
+  { q: "잔가보장상품은\n모빌라이즈파이낸셜서비스에만 있는\n할부상품이다?", a: false }
 ];
 
 canvas.addEventListener("touchmove", e => {
@@ -268,11 +277,7 @@ function update() {
   if (ball.x + ball.r > width || ball.x - ball.r < 0) ball.dx *= -1;
   if (ball.y - ball.r < 0) ball.dy *= -1;
 
-  if (
-    ball.y + ball.r > height - 30 &&
-    ball.x > paddle.x &&
-    ball.x < paddle.x + paddle.w
-  ) {
+  if (ball.y + ball.r > height - 30 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
     ball.dy = -Math.abs(ball.dy);
   }
 
@@ -283,17 +288,18 @@ function update() {
       b.visible = false;
       ball.dy *= -1;
       score += 10;
-      document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+      updateScore();
     }
   });
 
   if (ball.y > height) {
     lives--;
-    document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+    updateScore();
     if (lives <= 0) {
       endGame();
       return;
     } else {
+      showLifeMessage(`라이프가 1 감소했습니다.\n남은 라이프: ${lives}`);
       ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
     }
   }
@@ -301,7 +307,10 @@ function update() {
   requestAnimationFrame(update);
 }
 
-// 퀴즈 관련
+function updateScore() {
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+}
+
 function startQuiz() {
   if (!gameRunning) return;
   quizActive = true;
@@ -345,21 +354,31 @@ function showResultMessage(text, color) {
   }, 1500);
 }
 
+function showLifeMessage(text) {
+  pausedForResult = true;
+  lifeMsg.textContent = text;
+  lifeMsg.style.display = "block";
+  setTimeout(() => {
+    lifeMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
+  }, 1500);
+}
+
 function checkAnswer(selected, correct) {
   quizBox.style.display = "none";
   quizActive = false;
   if (selected === correct) {
     score += 200;
-    showResultMessage("정답입니다! +200점", "#00ff88");
+    showResultMessage("정답입니다!\n+200점", "#00ff88");
   } else {
     score -= 100;
     lives--;
-    showResultMessage("오답입니다! -100점", "#ff5555");
+    showResultMessage("오답입니다!\n-100점", "#ff5555");
   }
-  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
-  if (lives <= 0) {
-    endGame();
-  }
+  updateScore();
+  if (lives <= 0) endGame();
 }
 
 function startQuizCycle() {
@@ -376,7 +395,7 @@ function resetGame() {
   score = 0;
   lives = 3;
   createLogoBricks();
-  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+  updateScore();
   ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
 }
 
@@ -386,7 +405,7 @@ function endGame() {
   gameRunning = false;
   quizActive = false;
   pausedForResult = false;
-  document.getElementById("finalText").innerHTML = `게임 종료!<br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
+  document.getElementById("finalText").innerHTML = `게임 종료!\n최종 점수: ${score}\n남은 라이프: ${lives}`;
   document.getElementById("finalResult").style.display = "flex";
 }
 
