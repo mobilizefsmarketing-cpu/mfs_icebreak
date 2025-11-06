@@ -87,8 +87,8 @@
     color: white;
     border: none;
     border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 1rem;
+    padding: 10px 30px;
+    font-size: 1.2rem;
     cursor: pointer;
   }
   #timer {
@@ -96,19 +96,40 @@
     margin-top: 10px;
     color: #ff6666;
   }
-  #messageOverlay, #gameOverOverlay {
+  #resultMsg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.8rem;
+    font-weight: bold;
+    background: rgba(0,0,0,0.7);
+    padding: 20px 30px;
+    border-radius: 12px;
+    display: none;
+    z-index: 8;
+  }
+  #finalResult {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.9);
+    color: #39aaff;
     display: none;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    text-align: center;
-    z-index: 7;
+    justify-content: center;
+    align-items: center;
     font-size: 1.5rem;
-    font-weight: bold;
+    z-index: 7;
+  }
+  #retryBtn {
+    margin-top: 20px;
+    background: #00bfff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    cursor: pointer;
   }
 </style>
 </head>
@@ -130,11 +151,14 @@
       <div id="timer"></div>
     </div>
 
-    <div id="messageOverlay"></div>
-    <div id="gameOverOverlay"></div>
-
     <canvas id="gameCanvas"></canvas>
     <div id="scoreBoard">점수: 0 | 라이프: 3</div>
+    <div id="resultMsg"></div>
+
+    <div id="finalResult">
+      <div id="finalText"></div>
+      <button id="retryBtn" onclick="returnToIntro()">다시 도전하기</button>
+    </div>
   </div>
 
 <script>
@@ -153,17 +177,19 @@ window.addEventListener("resize", () => {
 });
 
 let ball = { x: width / 2, y: height - 30, dx: 4, dy: -4, r: 8 };
-let paddle = { w: 80, h: 10, x: width / 2 - 40, speed: 0 };
+let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
 let score = 0, lives = 3;
 let gameRunning = false;
 let quizActive = false;
 let quizTimer, timeLeft = 10;
+let quizInterval;
+let pausedForResult = false;
+
 const quizBox = document.getElementById("quiz");
 const questionText = document.getElementById("questionText");
 const timerDisplay = document.getElementById("timer");
-const messageOverlay = document.getElementById("messageOverlay");
-const gameOverOverlay = document.getElementById("gameOverOverlay");
+const resultMsg = document.getElementById("resultMsg");
 
 const quizList = [
   { q: "그랑콜레오스 26년 생산기준 3.3% 금리 할부원금제한은 2500만원 있다?", a: true },
@@ -171,7 +197,6 @@ const quizList = [
   { q: "잔가보장상품은 모빌라이즈파이낸셜서비스에만 있는 할부상품이다?", a: false }
 ];
 
-// 터치 / 마우스 이동
 canvas.addEventListener("touchmove", e => {
   const touch = e.touches[0];
   const rect = canvas.getBoundingClientRect();
@@ -236,31 +261,37 @@ function draw() {
 }
 
 function update() {
-  if (!gameRunning || quizActive) return;
+  if (!gameRunning || quizActive || pausedForResult) return;
   ball.x += ball.dx;
   ball.y += ball.dy;
 
   if (ball.x + ball.r > width || ball.x - ball.r < 0) ball.dx *= -1;
   if (ball.y - ball.r < 0) ball.dy *= -1;
 
-  if (ball.y + ball.r > height - 30 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
+  if (
+    ball.y + ball.r > height - 30 &&
+    ball.x > paddle.x &&
+    ball.x < paddle.x + paddle.w
+  ) {
     ball.dy = -Math.abs(ball.dy);
   }
 
   bricks.forEach(b => {
-    if (b.visible && ball.x > b.x && ball.x < b.x + b.w && ball.y > b.y && ball.y < b.y + b.h) {
+    if (b.visible &&
+        ball.x > b.x && ball.x < b.x + b.w &&
+        ball.y > b.y && ball.y < b.y + b.h) {
       b.visible = false;
       ball.dy *= -1;
       score += 10;
-      updateScore();
+      document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
     }
   });
 
   if (ball.y > height) {
     lives--;
-    updateScore();
+    document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
     if (lives <= 0) {
-      gameOver();
+      endGame();
       return;
     } else {
       ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
@@ -270,11 +301,7 @@ function update() {
   requestAnimationFrame(update);
 }
 
-function updateScore() {
-  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
-}
-
-// 🔸 퀴즈 관련
+// 퀴즈 관련
 function startQuiz() {
   if (!gameRunning) return;
   quizActive = true;
@@ -305,10 +332,17 @@ function answerQuiz(ans) {
   checkAnswer(ans, correct);
 }
 
-function showMessage(text) {
-  messageOverlay.innerText = text;
-  messageOverlay.style.display = "flex";
-  setTimeout(() => { messageOverlay.style.display = "none"; }, 1500);
+function showResultMessage(text, color) {
+  resultMsg.textContent = text;
+  resultMsg.style.color = color;
+  resultMsg.style.display = "block";
+  pausedForResult = true;
+  setTimeout(() => {
+    resultMsg.style.display = "none";
+    pausedForResult = false;
+    gameRunning = true;
+    update();
+  }, 1500);
 }
 
 function checkAnswer(selected, correct) {
@@ -316,28 +350,24 @@ function checkAnswer(selected, correct) {
   quizActive = false;
   if (selected === correct) {
     score += 200;
-    showMessage("정답입니다! +200점");
+    showResultMessage("정답입니다! +200점", "#00ff88");
   } else {
     score -= 100;
     lives--;
-    showMessage("오답입니다! -100점");
+    showResultMessage("오답입니다! -100점", "#ff5555");
   }
-  updateScore();
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
   if (lives <= 0) {
-    gameOver();
-  } else {
-    gameRunning = true;
-    update();
+    endGame();
   }
 }
 
-// 🔹 퀴즈 10초마다 등장
-let quizInterval;
 function startQuizCycle() {
   quizInterval = setInterval(() => {
-    if (gameRunning && !quizActive) startQuiz();
+    if (gameRunning && !quizActive && !pausedForResult) startQuiz();
   }, 10000);
 }
+
 function stopQuizCycle() {
   if (quizInterval) clearInterval(quizInterval);
 }
@@ -346,35 +376,27 @@ function resetGame() {
   score = 0;
   lives = 3;
   createLogoBricks();
-  updateScore();
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
   ball = { x: width / 2, y: height - 40, dx: 4, dy: -4, r: 8 };
 }
 
-function gameOver() {
+function endGame() {
   stopQuizTimer();
   stopQuizCycle();
   gameRunning = false;
   quizActive = false;
-  gameOverOverlay.innerHTML = `
-    <div>🎮 게임 종료 🎮</div>
-    <div style="margin-top:10px;">최종 점수: ${score}</div>
-    <div>남은 라이프: ${lives}</div>
-    <div style="margin-top:20px; font-size:1rem; opacity:0.8;">화면을 터치하면 처음으로 돌아갑니다.</div>
-  `;
-  gameOverOverlay.style.display = "flex";
-  gameOverOverlay.onclick = () => {
-    gameOverOverlay.style.display = "none";
-    returnToIntro();
-  };
+  pausedForResult = false;
+  document.getElementById("finalText").innerHTML = `게임 종료!<br>최종 점수: ${score}<br>남은 라이프: ${lives}`;
+  document.getElementById("finalResult").style.display = "flex";
 }
 
 function returnToIntro() {
+  document.getElementById("finalResult").style.display = "none";
   resetGame();
   document.getElementById("intro").style.display = "flex";
   document.getElementById("startBtn").style.display = "block";
 }
 
-// 인트로 3초 후 시작 버튼 표시
 createLogoBricks();
 setTimeout(() => {
   document.getElementById("startBtn").style.display = "block";
@@ -382,6 +404,8 @@ setTimeout(() => {
 
 function startGame() {
   document.getElementById("intro").style.display = "none";
+  document.getElementById("finalResult").style.display = "none";
+  resetGame();
   gameRunning = true;
   startQuizCycle();
   update();
