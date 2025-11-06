@@ -143,11 +143,14 @@
 <body>
   <div id="gameContainer">
     <audio id="bgm" loop preload="auto">
-        </audio>
+        <source src="http://soundimage.org/wp-content/uploads/2016/10/Arcade-Fantasy.mp3" type="audio/mpeg">
+    </audio>
     <audio id="bounceSfx" preload="auto">
-        </audio>
+        <source src="https://static.elevenlabs.io/sound-effects/bounce-2.mp3" type="audio/mpeg">
+    </audio>
     <audio id="clickSfx" preload="auto">
-        </audio>
+        <source src="https://static.elevenlabs.io/sound-effects/bounce-2.mp3" type="audio/mpeg">
+    </audio>
 
     <div id="intro">
       <div>모빌라이즈파이낸셜서비스</div>
@@ -228,7 +231,7 @@ const timerDisplay = document.getElementById("timer");
 const resultMsg = document.getElementById("resultMsg");
 const lifeMsg = document.getElementById("lifeMsg");
 
-// 총 22개의 퀴즈 목록
+// 총 22개의 퀴즈 목록 (이전과 동일)
 const allQuizzes = [
   { q: "그랑콜레오스 26년 생산기준\n3.3% 금리 할부원금제한은\n2500만원 있다?", a: true },
   { q: "모빌라이즈파이낸셜서비스는\n프랑스 회사다?", a: true },
