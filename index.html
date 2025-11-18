@@ -8,7 +8,8 @@
   body {
     margin: 0;
     overflow: hidden;
-    background: radial-gradient(circle at center, #041630, #000);
+    /* 크리스마스 테마: 딥 그린 배경 */
+    background: radial-gradient(circle at center, #154734, #000);
     color: white;
     font-family: "Pretendard", sans-serif;
     touch-action: none;
@@ -22,10 +23,11 @@
     align-items: center;
   }
   canvas {
-    border: 3px solid #39aaff;
+    /* 크리스마스 테마: 레드 테두리와 그린 배경, 레드 그림자 */
+    border: 5px solid #C90016; 
     border-radius: 15px;
-    background: radial-gradient(circle at 30% 30%, #062047, #000);
-    box-shadow: 0 0 20px #009dff;
+    background: radial-gradient(circle at 30% 30%, #004d40, #000); 
+    box-shadow: 0 0 25px #C90016; 
     touch-action: none;
   }
   #scoreBoard {
@@ -45,7 +47,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #39aaff;
+    /* 크리스마스 테마: 골드 텍스트 */
+    color: #FFD700; 
     font-size: 1.6rem;
     line-height: 2.5rem;
     font-weight: bold;
@@ -53,7 +56,8 @@
   }
   #startBtn {
     margin-top: 30px;
-    background: #00bfff;
+    /* 크리스마스 테마: 레드 버튼 */
+    background: #C90016; 
     color: white;
     border: none;
     border-radius: 10px;
@@ -87,7 +91,8 @@
     justify-content: center;
   }
   .quiz-btn {
-    background: #00bfff;
+    /* 크리스마스 테마: 그린 버튼 */
+    background: #008000; 
     color: white;
     border: none;
     border-radius: 10px;
@@ -98,7 +103,8 @@
   #timer {
     font-size: 1rem;
     margin-top: 10px;
-    color: #ff6666;
+    /* 크리스마스 테마: 골드 타이머 */
+    color: #FFD700; 
   }
   #resultMsg, #lifeMsg {
     position: absolute;
@@ -119,7 +125,8 @@
     position: absolute;
     inset: 0;
     background: rgba(0,0,0,0.9);
-    color: #39aaff;
+    /* 크리스마스 테마: 레드 텍스트 */
+    color: #C90016; 
     display: none;
     flex-direction: column;
     justify-content: center;
@@ -130,7 +137,8 @@
   }
   #retryBtn {
     margin-top: 20px;
-    background: #00bfff;
+    /* 크리스마스 테마: 레드 버튼 */
+    background: #C90016; 
     color: white;
     border: none;
     border-radius: 10px;
@@ -169,7 +177,7 @@
     </div>
 
     <canvas id="gameCanvas"></canvas>
-    <div id="scoreBoard">점수: 0 | 라이프: 3</div>
+    <div id="scoreBoard">점수: 0 | 라이프: 3 | 공 개수: 1</div>
     <div id="resultMsg"></div>
     <div id="lifeMsg"></div>
 
@@ -200,30 +208,35 @@ const bounceSfx = document.getElementById('bounceSfx');
 const clickSfx = document.getElementById('clickSfx');
 
 // 볼륨 설정
-bgm.volume = 0.2; // 배경음은 작게
-bounceSfx.volume = 0.5; // 효과음
-clickSfx.volume = 0.6; // 효과음
+bgm.volume = 0.2; 
+bounceSfx.volume = 0.5; 
+clickSfx.volume = 0.6; 
 
 function playSfx(audioElement) {
-    audioElement.currentTime = 0; // 소리가 겹쳐 재생될 수 있도록 현재 재생 위치를 0으로 리셋
+    audioElement.currentTime = 0; 
     audioElement.play().catch(e => console.log("Audio playback failed:", e));
 }
 
-// 공의 속도 관련 변수와 제한 설정
-const SPEED_CHANGE = 0.1;
-const MAX_SPEED = 3.0;
-const MIN_SPEED = 1.0; 
+// 🚀 공의 속도 관련 변수: 속도 상향
+const SPEED_CHANGE = 0.3; 
+const MAX_SPEED = 4.0; 
+const MIN_SPEED = 2.0; 
 const NUM_BOMBS = 3; 
 
-let ball = { x: width / 2, y: height - 30, dx: 1, dy: -1, r: 8 };
+// 공 배열로 변경
+let balls = []; 
 let paddle = { w: 80, h: 10, x: width / 2 - 40 };
 let bricks = [];
 let score = 0, lives = 3;
 let gameRunning = false;
+let gameWon = false; // 🧱 게임 승리 상태 플래그 추가
 let quizActive = false;
 let quizTimer, timeLeft = 10;
 let quizInterval;
 let pausedForResult = false;
+
+// 🔢 공 개수 증가 로직을 위한 변수 추가
+let extraBalls = 0; 
 
 const quizBox = document.getElementById("quiz");
 const questionText = document.getElementById("questionText");
@@ -231,7 +244,7 @@ const timerDisplay = document.getElementById("timer");
 const resultMsg = document.getElementById("resultMsg");
 const lifeMsg = document.getElementById("lifeMsg");
 
-// 총 22개의 퀴즈 목록 (이전과 동일)
+// 퀴즈 목록 (이전과 동일)
 const allQuizzes = [
   { q: "그랑콜레오스 26년 생산기준\n3.3% 금리 할부원금제한은\n2500만원 있다?", a: true },
   { q: "모빌라이즈파이낸셜서비스는\n프랑스 회사다?", a: true },
@@ -257,7 +270,7 @@ const allQuizzes = [
   { q: "모빌라이즈파이낸셜서비스의 본사 위치는\n프랑스 파리이다?", a: true }
 ];
 
-let availableQuizIndices = []; // 남아있는 퀴즈 인덱스
+let availableQuizIndices = []; 
 
 function resetQuizAvailability() {
     availableQuizIndices = [...Array(allQuizzes.length).keys()];
@@ -297,7 +310,8 @@ function createLogoBricks() {
       if (circlePart || slash) {
         const newBrick = {
           x, y, w: brickW, h: brickH, 
-          color: slash ? "#ff3c00" : "#39aaff", 
+          // 🎄 크리스마스 테마: 슬래시는 레드, 서클 부분은 그린
+          color: slash ? "#C90016" : "#008000", 
           visible: true, 
           isBomb: false, 
           bombHits: 0, 
@@ -328,19 +342,22 @@ function drawBricks() {
     if (!b.visible) return;
     
     ctx.shadowBlur = 10;
+    // 일반 벽돌은 해당 색상의 그림자
     ctx.shadowColor = b.color;
     
     if (b.isBomb) {
-        // 폭탄 벽돌 (빨간 테두리, 노란 중앙)
-        ctx.fillStyle = '#ff4444'; 
+        // 🎄 크리스마스 테마: 골드 테두리, 레드 중앙 (선물/장식 느낌)
+        ctx.fillStyle = '#FFD700'; // Gold Outline
         ctx.fillRect(b.x, b.y, b.w, b.h);
-        ctx.fillStyle = b.bombHits === 3 ? '#ffff00' : 
-                        b.bombHits === 2 ? '#ffcc00' :
-                        '#ff9900'; 
+        
+        // Red Center, 밝기가 히트 횟수에 따라 변경
+        ctx.fillStyle = b.bombHits === 3 ? '#C90016' : 
+                        b.bombHits === 2 ? '#B30000' :
+                        '#800000'; 
         ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, b.h - 4);
 
         // 남은 횟수 표시
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = 'white'; // White count
         ctx.font = '10px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -354,7 +371,7 @@ function drawBricks() {
   ctx.shadowBlur = 0;
 }
 
-// 폭탄 벽돌 폭발 로직
+// 폭탄 벽돌 폭발 로직 (변경 없음)
 function explodeBomb(bombBrick) {
     const explosionScore = 10;
     const { row: targetRow, col: targetCol } = bombBrick;
@@ -380,103 +397,170 @@ function explodeBomb(bombBrick) {
     updateScore();
 }
 
-function drawBall() {
+// 🎯 공을 그리는 함수 (balls 배열 순회)
+function drawBall(ball) {
   ctx.beginPath();
   ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#fff"; // 🎄 크리스마스 테마: 흰색 공
   ctx.shadowBlur = 15;
-  ctx.shadowColor = "#00ffff";
+  ctx.shadowColor = "#FFD700"; // 🎄 크리스마스 테마: 골드 그림자
   ctx.fill();
   ctx.closePath();
   ctx.shadowBlur = 0;
 }
 
 function drawPaddle() {
-  ctx.fillStyle = "#00ccff";
+  // 🎄 크리스마스 테마: 레드 패들
+  ctx.fillStyle = "#C90016"; 
   ctx.fillRect(paddle.x, height - 30, paddle.w, paddle.h);
 }
 
 function draw() {
   ctx.clearRect(0, 0, width, height);
   drawBricks();
-  drawBall();
+  balls.forEach(drawBall); // 모든 공을 그림
   drawPaddle();
+}
+
+// 새로운 공을 생성하고 balls 배열에 추가하는 함수
+function createNewBall() {
+    // 현재 존재하는 공 중 하나의 속도를 복사하여 새로운 공에 적용
+    let newDx = MIN_SPEED;
+    let newDy = -MIN_SPEED;
+
+    if (balls.length > 0) {
+        const existingBall = balls[0];
+        // 새로운 공은 튕기지 않도록 초기 속도(MIN_SPEED)로 시작하도록 변경
+        newDx = (Math.random() > 0.5 ? 1 : -1) * MIN_SPEED; 
+        newDy = -MIN_SPEED; 
+    }
+    
+    // 새로운 공은 패들 중앙에서 시작
+    const newBall = { 
+        x: paddle.x + paddle.w / 2, 
+        y: height - 40, 
+        dx: newDx, 
+        dy: newDy, 
+        r: 8 
+    };
+    balls.push(newBall);
+    updateScore();
 }
 
 function update() {
   if (!gameRunning || quizActive || pausedForResult) return;
   
-  let oldDx = ball.dx;
-  let oldDy = ball.dy;
-
-  ball.x += ball.dx;
-  ball.y += ball.dy;
-
-  let bounced = false;
-
-  // 벽 충돌
-  if (ball.x + ball.r > width || ball.x - ball.r < 0) {
-      ball.dx *= -1;
-      bounced = true;
-  }
-  if (ball.y - ball.r < 0) {
-      ball.dy *= -1;
-      bounced = true;
-  }
-
-  // 패들 충돌
-  if (ball.y + ball.r > height - 30 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
-    ball.dy = -Math.abs(ball.dy);
-    bounced = true;
+  // 🧱 승리 조건 확인: 남은 벽돌 개수 세기
+  const visibleBricks = bricks.filter(b => b.visible).length;
+  if (visibleBricks === 0) {
+      gameWon = true; // 승리 플래그 설정
+      endGame();
+      return;
   }
   
-  // 벽돌 충돌
-  bricks.forEach(b => {
-    if (b.visible &&
-        ball.x > b.x && ball.x < b.x + b.w &&
-        ball.y > b.y && ball.y < b.y + b.h) {
+  // 충돌 감지를 위해 새로운 배열 생성
+  const newBalls = [];
+  let bounced = false;
+
+  balls.forEach(ball => {
+    
+    // 1. 공 이동
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    // 2. 벽 충돌
+    if (ball.x + ball.r > width || ball.x - ball.r < 0) {
+        ball.dx *= -1;
+        bounced = true;
+    }
+    if (ball.y - ball.r < 0) {
+        ball.dy *= -1;
+        bounced = true;
+    }
+
+    // 3. 패들 충돌
+    if (ball.y + ball.r > height - 30 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
+      // 패들 충돌 시 공의 방향을 패들 위치에 따라 조절 
+      let relativeX = ball.x - (paddle.x + paddle.w / 2);
+      let normalizedX = relativeX / (paddle.w / 2); 
+
+      let currentSpeed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+      // X 방향 속도 변경 (최대 45도 반사)
+      ball.dx = normalizedX * currentSpeed; 
+      // Y 방향 속도 고정
+      ball.dy = -Math.abs(currentSpeed);
       
-      // 공 반사
-      ball.dy *= -1; 
-      bounced = true;
-      
-      // 폭탄 벽돌 처리
-      if (b.isBomb) {
-        b.bombHits--;
-        if (b.bombHits <= 0) {
-            explodeBomb(b); 
-        }
-      } else {
-        // 일반 벽돌 처리
-        b.visible = false;
-        score += 10;
-        updateScore();
+      // 속도가 최대 속도를 넘지 않도록 재조정
+      if (currentSpeed > MAX_SPEED) {
+          let factor = MAX_SPEED / currentSpeed;
+          ball.dx *= factor;
+          ball.dy *= factor;
       }
+
+      bounced = true;
+    }
+    
+    // 4. 벽돌 충돌
+    bricks.forEach(b => {
+      if (b.visible &&
+          ball.x > b.x && ball.x < b.x + b.w &&
+          ball.y > b.y && ball.y < b.y + b.h) {
+        
+        // 공 반사
+        ball.dy *= -1; 
+        bounced = true;
+        
+        if (b.isBomb) {
+          b.bombHits--;
+          if (b.bombHits <= 0) {
+              explodeBomb(b); 
+          }
+        } else {
+          // 일반 벽돌 처리
+          b.visible = false;
+          score += 10;
+          updateScore();
+        }
+      }
+    });
+
+    // 5. 공을 잃은 경우
+    if (ball.y > height) {
+      // 이 공은 버려짐
+    } else {
+      newBalls.push(ball); // 잃지 않은 공만 새 배열에 추가
     }
   });
 
-  // 공이 튕겼다면 효과음 재생
+  balls = newBalls; // 살아남은 공만 남김
+
+  // 6. 공이 튕겼다면 효과음 재생
   if (bounced) {
       playSfx(bounceSfx);
   }
 
-  if (ball.y > height) {
+  // 7. 모든 공을 잃었을 때 라이프 처리 (게임 오버 조건)
+  if (balls.length === 0) {
     lives--;
     updateScore();
     if (lives <= 0) {
+      gameWon = false; // 패배 플래그 설정
       endGame();
       return;
     } else {
       showLifeMessage(`라이프가 1 감소했습니다.\n\n남은 라이프: ${lives}`);
-      ball = { x: width / 2, y: height - 40, dx: Math.abs(ball.dx), dy: -Math.abs(ball.dy), r: 8 };
+      // 라이프를 잃으면 초기 공 1개만 다시 생성
+      balls = [];
+      createNewBall(); 
     }
   }
+
   draw();
   requestAnimationFrame(update);
 }
 
 function updateScore() {
-  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives}`;
+  document.getElementById("scoreBoard").textContent = `점수: ${score} | 라이프: ${lives} | 공 개수: ${balls.length}`;
 }
 
 function startQuiz() {
@@ -511,20 +595,43 @@ function stopQuizTimer() {
 }
 
 function adjustBallSpeed(isCorrect) {
-    let speed = Math.abs(ball.dx);
+    if (balls.length === 0) return;
+    
+    // 대표 속도 조정
+    let speed = Math.abs(balls[0].dy);
     
     if (isCorrect) {
+        // 정답: 속도를 0.3 감소시켜 쉽게 만듦. MIN_SPEED(2.0)보다 작아지지 않음.
         speed = Math.max(MIN_SPEED, speed - SPEED_CHANGE); 
     } else {
+        // 오답: 속도를 0.3 증가시켜 어렵게 만듦. MAX_SPEED(4.0)를 초과하지 않음.
         speed = Math.min(MAX_SPEED, speed + SPEED_CHANGE); 
     }
     
-    ball.dx = ball.dx > 0 ? speed : -speed;
-    ball.dy = ball.dy > 0 ? speed : -speed;
+    // 모든 공에 조정된 속도를 적용 (방향은 유지)
+    balls.forEach(ball => {
+        let currentFactor = Math.abs(ball.dy) / speed;
+        
+        // 공의 dx, dy 비율을 유지하면서 speed를 적용
+        if (ball.dy < 0) {
+            ball.dy = -speed;
+        } else {
+            ball.dy = speed;
+        }
+        ball.dx /= currentFactor;
+        
+        // 너무 빨라지는 것을 방지하기 위해 MAX_SPEED 재확인
+        let currentTotalSpeed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+        if (currentTotalSpeed > MAX_SPEED) {
+            let factor = MAX_SPEED / currentTotalSpeed;
+            ball.dx *= factor;
+            ball.dy *= factor;
+        }
+    });
 }
 
 function answerQuiz(ans) {
-  playSfx(clickSfx); // 퀴즈 버튼 클릭 시 효과음
+  playSfx(clickSfx); 
   stopQuizTimer();
   const correct = quizBox.dataset.answer === "true";
   checkAnswer(ans, correct);
@@ -559,15 +666,32 @@ function checkAnswer(selected, correct) {
   quizBox.style.display = "none";
   quizActive = false;
   
+  // 속도 조정
   adjustBallSpeed(selected === correct);
 
   if (selected === correct) {
+    // 🔢 정답: 200점 획득 (점수 로직 유지)
     score += 200;
-    showResultMessage("정답입니다!\n\n+200점", "#00ff88");
+    
+    // 🔢 퀴즈 정답 시 공 개수 2진수로 증가
+    if (extraBalls === 0) {
+        extraBalls = 1; // 2^0 = 1
+    } else {
+        extraBalls *= 2; // 2^n
+    }
+    
+    // 증가된 공 개수만큼 생성
+    for (let i = 0; i < extraBalls; i++) {
+        createNewBall();
+    }
+    
+    showResultMessage(`정답입니다!\n\n+200점!\n공이 ${extraBalls}개 추가됩니다!`, "#00ff88");
   } else {
+    // 오답: -100점, 라이프 감소
     score -= 100;
     lives--;
     showResultMessage("오답입니다!\n\n-100점", "#ff5555");
+    extraBalls = 0; // 오답 시 공 개수 증가 초기화
   }
   updateScore();
   if (lives <= 0) endGame();
@@ -583,15 +707,7 @@ function stopQuizCycle() {
   if (quizInterval) clearInterval(quizInterval);
 }
 
-function resetGame() {
-  score = 0;
-  lives = 3;
-  createLogoBricks();
-  updateScore();
-  ball = { x: width / 2, y: height - 40, dx: 1.0, dy: -1.0, r: 8 }; 
-  resetQuizAvailability(); 
-}
-
+// 🏆 endGame 함수 수정: 승리/패배 메시지 분리
 function endGame() {
   stopQuizTimer();
   stopQuizCycle();
@@ -599,15 +715,38 @@ function endGame() {
   quizActive = false;
   pausedForResult = false;
   
-  bgm.pause(); // 게임 종료 시 BGM 정지
+  bgm.pause(); 
   
-  document.getElementById("finalText").innerHTML = `게임 종료! <br><br> 최종 점수: ${score} <br><br> 남은 라이프: ${lives}`;
+  let resultMessage = "";
+  if (gameWon) {
+      document.getElementById("finalResult").style.color = "#FFD700"; // 골드 색상으로 변경
+      resultMessage = `✨벽돌 완전 파괴! 축하합니다!✨ <br><br> 최종 점수: ${score} <br><br> 남은 라이프: ${lives}`;
+  } else {
+      document.getElementById("finalResult").style.color = "#C90016"; // 레드 색상 유지
+      resultMessage = `게임 오버! <br><br> 최종 점수: ${score} <br><br> 남은 라이프: ${lives}`;
+  }
+  
+  document.getElementById("finalText").innerHTML = resultMessage;
   
   document.getElementById("finalResult").style.display = "flex";
 }
 
+function resetGame() {
+  score = 0;
+  lives = 3;
+  extraBalls = 0;
+  gameWon = false; // 🧱 게임 초기화 시 플래그 리셋
+  createLogoBricks();
+  updateScore();
+  
+  balls = [];
+  createNewBall(); // 초기 공 1개 생성 (MIN_SPEED 적용)
+  
+  resetQuizAvailability(); 
+}
+
 function returnToIntro() {
-  playSfx(clickSfx); // 버튼 클릭 시 효과음
+  playSfx(clickSfx); 
   document.getElementById("finalResult").style.display = "none";
   resetGame();
   document.getElementById("intro").style.display = "flex";
@@ -621,14 +760,16 @@ setTimeout(() => {
 }, 3000);
 
 function startGame() {
-  playSfx(clickSfx); // 게임 시작 버튼 클릭 시 효과음
+  playSfx(clickSfx); 
   document.getElementById("intro").style.display = "none";
   document.getElementById("finalResult").style.display = "none";
-  resetGame();
+  
+  resetGame(); // 게임 시작 시 초기 공 1개 생성 포함
+  
   gameRunning = true;
   startQuizCycle();
   update();
-  bgm.play().catch(e => console.log("BGM playback failed: User interaction required.", e)); // BGM 재생 시도
+  bgm.play().catch(e => console.log("BGM playback failed: User interaction required.", e)); 
 }
 </script>
 </body>
