@@ -19,21 +19,19 @@
   #gameContainer::before {
     content: '';
     position: absolute;
-    top: 5%; /* 상단에서 조금 내려오게 */
+    top: 5%; 
     left: 50%;
     transform: translateX(-50%) rotateY(0deg); 
-    width: 150px; /* 산타 이미지 크기 */
+    width: 150px; 
     height: 150px;
-    /* 🚨 산타 이미지 URL 제거: imgbb.com 오류 방지 */
-    /* background-image: url('https://i.ibb.co/L50HjW7/santa-claus.png'); */ 
     background-size: contain;
     background-repeat: no-repeat;
-    z-index: 1; /* 캔버스 뒤에 위치 */
-    animation: santaFloat 10s ease-in-out infinite alternate; /* 산타 움직임 애니메이션 */
+    z-index: 1; 
+    animation: santaFloat 10s ease-in-out infinite alternate; 
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)); 
   }
 
-  /* 🎄 크리스마스 테마 - 막대사탕 추가 (파일명: candy2.png으로 변경) */
+  /* 🎄 크리스마스 테마 - 막대사탕 추가 */
   #gameContainer::after {
     content: '';
     position: absolute;
@@ -41,20 +39,19 @@
     left: 0;
     width: 100%;
     height: 100%;
-    /* 🚨 파일명 변경 적용: candy2.png */
     background-image: 
       url('candy2.png'), 
       url('candy2.png'),
       url('candy2.png');
-    background-size: 100px 100px; /* 막대사탕 크기 */
+    background-size: 100px 100px; 
     background-position: 
-      10% 20%, /* 좌상단 */
-      90% 60%, /* 우하단 */
-      20% 80%; /* 좌하단 */
+      10% 20%, 
+      90% 60%, 
+      20% 80%; 
     background-repeat: no-repeat;
-    z-index: 0; /* 캔버스 가장 뒤에 위치 */
-    opacity: 0.5; /* 투명도 조절 */
-    animation: candyCaneRotate 15s linear infinite; /* 막대사탕 회전 애니메이션 */
+    z-index: 0; 
+    opacity: 0.5; 
+    animation: candyCaneRotate 15s linear infinite; 
   }
 
   /* 🎄 크리스마스 테마 - 눈송이 효과 */
@@ -64,8 +61,8 @@
     border-radius: 50%;
     opacity: 0.8;
     animation: fall linear infinite;
-    pointer-events: none; /* 클릭 방지 */
-    z-index: 0; /* 배경에 위치 */
+    pointer-events: none; 
+    z-index: 0; 
   }
 
   #gameContainer {
@@ -82,7 +79,7 @@
     background: radial-gradient(circle at 30% 30%, #004d40, #000); /* 그린 배경 */ 
     box-shadow: 0 0 25px #C90016; /* 레드 그림자 */ 
     touch-action: none;
-    z-index: 2; /* 산타와 막대사탕보다 앞에 */
+    z-index: 2; 
   }
   #scoreBoard {
     position: absolute;
@@ -92,30 +89,44 @@
     background: rgba(0,0,0,0.5);
     padding: 6px 12px;
     border-radius: 10px;
-    z-index: 3; /* 다른 UI보다 위에 */
+    z-index: 3; 
   }
+  
+  /* 인트로 배경을 팻말에 로고와 문구가 삽입된 이미지로 설정 */
   #intro {
     position: absolute;
     inset: 0;
-    background: black;
+    background-color: black; 
+    /* fredric.png 파일을 로고와 문구가 삽입된 새로운 이미지로 대체 가정 */
+    background-image: url('fredric.png'); 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-position: center bottom; 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #FFD700; /* 골드 텍스트 */ 
+    color: #FFD700; 
     font-size: 1.6rem;
     line-height: 2.5rem;
     font-weight: bold;
     z-index: 5;
   }
-  /* 로고 스타일 유지 */
-  #intro img {
-    /* 🚨 로고 크기 조절: 150px -> 250px */
-    width: 250px; 
-    margin-bottom: 20px; /* 로고와 텍스트 간 간격 */
+  
+  /* 팻말 역할 div 및 관련 CSS 삭제 */
+
+  /* 기존 인트로 텍스트는 숨김 처리 */
+  #intro .hidden-text {
+      display: none;
   }
+
   #startBtn {
-    margin-top: 30px;
+    /* 버튼 위치 조정 (팻말과 겹치지 않도록 더 아래로) */
+    position: absolute; 
+    top: 85%; /* 하단에 가깝게 이동 */
+    left: 50%;
+    transform: translateX(-50%);
+    
     background: #C90016; /* 레드 버튼 */ 
     color: white;
     border: none;
@@ -123,6 +134,7 @@
     padding: 12px 24px;
     font-size: 1.1rem;
     cursor: pointer;
+    z-index: 7; /* 팻말 이미지보다 위에 */
   }
   #quiz {
     position: absolute;
@@ -244,10 +256,12 @@
     </audio>
 
     <div id="intro">
-      <img src="logo2.png" alt="모빌라이즈파이낸셜서비스 로고">
-      <div>모빌라이즈파이낸셜서비스</div>
-      <div>제공</div>
-      <div>"아이스 브레이커"</div>
+      <div class="hidden-text">
+        <img src="logo2.png" alt="모빌라이즈파이낸셜서비스 로고">
+        <div>모빌라이즈파이낸셜서비스</div>
+        <div>제공</div>
+      </div>
+      
       <button id="startBtn" style="display:none;" onclick="startGame()">게임 시작하기</button>
     </div>
 
@@ -297,7 +311,7 @@ function createSnowflake() {
   snowflake.style.height = size + 'px';
   snowflake.style.left = Math.random() * 100 + '%';
   snowflake.style.animationDuration = Math.random() * 10 + 5 + 's'; // 5s ~ 15s
-  snowflake.style.animationDelay = Math.random() * 5 + 's'; // 
+  snowflake.style.animationDelay = Math.random() * 5 + 's'; 
   
   // 수명이 다한 눈송이 제거
   snowflake.addEventListener('animationend', () => {
@@ -775,7 +789,7 @@ function checkAnswer(selected, correct) {
   adjustBallSpeed(selected === correct);
 
   if (selected === correct) {
-    // 🔢 정답: 200점 획득 (점수 로직 유지)
+    // 🔢 정답: 200점 획득
     score += 200;
     
     // 🔢 퀴즈 정답 시 공 개수 2진수로 증가
