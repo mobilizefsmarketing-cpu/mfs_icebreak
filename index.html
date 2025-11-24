@@ -246,13 +246,16 @@
 <body>
   <div id="gameContainer">
     <audio id="bgm" loop preload="auto">
-        <source src="http://soundimage.org/wp-content/uploads/2016/10/Arcade-Fantasy.mp3" type="audio/mpeg">
+        <source src="bgm.mp3" type="audio/mpeg">
     </audio>
     <audio id="bounceSfx" preload="auto">
-        <source src="https://static.elevenlabs.io/sound-effects/bounce-2.mp3" type="audio/mpeg">
+        <source src="ballsound.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="brickHitSfx" preload="auto">
+        <source src="ballsound.mp3" type="audio/mpeg">
     </audio>
     <audio id="clickSfx" preload="auto">
-        <source src="https://static.elevenlabs.io/sound-effects/bounce-2.mp3" type="audio/mpeg">
+        <source src="ballsound.mp3" type="audio/mpeg">
     </audio>
 
     <div id="intro">
@@ -329,12 +332,17 @@ for (let i = 0; i < 50; i++) {
 // 오디오 요소
 const bgm = document.getElementById('bgm');
 const bounceSfx = document.getElementById('bounceSfx');
+// 🧱 벽돌 효과음 요소 추가
+const brickHitSfx = document.getElementById('brickHitSfx'); 
 const clickSfx = document.getElementById('clickSfx');
 
 // 볼륨 설정
-bgm.volume = 0.2; 
-bounceSfx.volume = 0.5; 
-clickSfx.volume = 0.6; 
+// 🎵 배경음악 볼륨
+bgm.volume = 0.1; 
+// 🔊 효과음 볼륨을 최대로 키움
+bounceSfx.volume = 1.0; 
+brickHitSfx.volume = 1.0; 
+clickSfx.volume = 1.0; 
 
 function playSfx(audioElement) {
     audioElement.currentTime = 0; 
@@ -581,7 +589,8 @@ function update() {
   
   // 충돌 감지를 위해 새로운 배열 생성
   const newBalls = [];
-  let bounced = false;
+  let wallOrPaddleBounced = false; // 🧱 벽/패들 충돌 플래그 추가
+  let brickBounced = false; // 🧱 벽돌 충돌 플래그 추가
 
   balls.forEach(ball => {
     
@@ -592,11 +601,11 @@ function update() {
     // 2. 벽 충돌
     if (ball.x + ball.r > width || ball.x - ball.r < 0) {
         ball.dx *= -1;
-        bounced = true;
+        wallOrPaddleBounced = true; // 플래그 설정
     }
     if (ball.y - ball.r < 0) {
         ball.dy *= -1;
-        bounced = true;
+        wallOrPaddleBounced = true; // 플래그 설정
     }
 
     // 3. 패들 충돌
@@ -618,18 +627,19 @@ function update() {
           ball.dy *= factor;
       }
 
-      bounced = true;
+      wallOrPaddleBounced = true; // 플래그 설정
     }
     
     // 4. 벽돌 충돌
     bricks.forEach(b => {
+      // 🧱 기존 충돌 처리 로직
       if (b.visible &&
           ball.x > b.x && ball.x < b.x + b.w &&
           ball.y > b.y && ball.y < b.y + b.h) {
         
         // 공 반사
         ball.dy *= -1; 
-        bounced = true;
+        brickBounced = true; // 벽돌 충돌 플래그 설정
         
         if (b.isBomb) {
           b.bombHits--;
@@ -642,6 +652,9 @@ function update() {
           score += 10;
           updateScore();
         }
+        
+        // 🧱 벽돌 충돌 효과음 즉시 재생 (추가된 부분)
+        playSfx(brickHitSfx);
       }
     });
 
@@ -655,10 +668,11 @@ function update() {
 
   balls = newBalls; // 살아남은 공만 남김
 
-  // 6. 공이 튕겼다면 효과음 재생
-  if (bounced) {
+  // 6. 공이 튕겼다면 효과음 재생 (벽/패들 충돌인 경우만)
+  if (wallOrPaddleBounced) { 
       playSfx(bounceSfx);
   }
+  // 🧱 벽돌 충돌 효과음은 4번에서 이미 처리됨
 
   // 7. 모든 공을 잃었을 때 라이프 처리 (게임 오버 조건)
   if (balls.length === 0) {
